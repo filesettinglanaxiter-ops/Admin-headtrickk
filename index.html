@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="id" id="htmlRoot">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🧠 Headtrick Admin</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    /* ========== ROOT VARIABLES (M3) ========== */
+    :root {
+      --bg-primary: #0a0a1a;
+      --bg-secondary: #0d0d2b;
+      --bg-card: #1a1a3e;
+      --bg-card-hover: #24245a;
+      --text-primary: #e0e0ff;
+      --text-secondary: #8888cc;
+      --text-muted: #555588;
+      --border-color: #00f0ff33;
+      --border-active: #00f0ff;
+      --neon-blue: #00f0ff;
+      --neon-purple: #a855f7;
+      --neon-pink: #ff4466;
+      --neon-green: #00ff88;
+      --shadow-glow: 0 0 40px #00f0ff22;
+      --radius: 24px;
+      --radius-sm: 16px;
+      --radius-xs: 12px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --font: 'Inter', 'Segoe UI', sans-serif;
+      --nav-height: 72px;
+    }
+
+    /* ========== LIGHT MODE ========== */
+    [data-theme="light"] {
+      --bg-primary: #f0f0ff;
+      --bg-secondary: #e8e8ff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f0f0ff;
+      --text-primary: #1a1a3e;
+      --text-secondary: #444477;
+      --text-muted: #8888bb;
+      --border-color: #8888cc44;
+      --border-active: #5555aa;
+      --neon-blue: #4444cc;
+      --neon-purple: #7c3aed;
+      --neon-pink: #cc3355;
+      --neon-green: #22aa66;
+      --shadow-glow: 0 0 40px #4444cc22;
+    }
+
+    /* ========== RESET ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-height) + 20px);
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ========== CONTAINER ========== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 20px 80px;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-left h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+    }
+    .header-left h1 i {
+      -webkit-text-fill-color: initial;
+      color: var(--neon-blue);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-right .theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      padding: 8px 14px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-right .theme-toggle:hover {
+      border-color: var(--neon-blue);
+      box-shadow: var(--shadow-glow);
+    }
+    .header-right .key-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      padding: 6px 16px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-right .key-badge i { color: var(--neon-blue); }
+
+    /* ========== BOTTOM NAVIGATION (M3) ========== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-height);
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 100;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .bottom-nav .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 16px;
+      border-radius: 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.6rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      font-family: var(--font);
+      min-width: 60px;
+      position: relative;
+    }
+    .bottom-nav .nav-item i {
+      font-size: 1.5rem;
+      transition: var(--transition);
+    }
+    .bottom-nav .nav-item.active {
+      color: var(--neon-blue);
+    }
+    .bottom-nav .nav-item.active i {
+      color: var(--neon-blue);
+      text-shadow: 0 0 20px var(--neon-blue44);
+    }
+    .bottom-nav .nav-item .badge {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      background: var(--neon-pink);
+      color: #fff;
+      font-size: 0.6rem;
+      border-radius: 30px;
+      padding: 1px 8px;
+      font-weight: 700;
+    }
+    .bottom-nav .nav-item:hover {
+      color: var(--text-primary);
+    }
+
+    /* ========== PAGE CONTAINER ========== */
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .page.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ========== PANEL / CARD M3 ========== */
+    .m3-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+      margin-bottom: 20px;
+    }
+    .m3-card:hover {
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-glow);
+    }
+    .m3-card h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+    }
+    .m3-card h2 i { color: var(--neon-blue); }
+
+    /* ========== FORM ========== */
+    .m3-form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .m3-form input {
+      flex: 1;
+      min-width: 180px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: var(--radius-xs);
+      font-size: 1rem;
+      outline: none;
+      transition: var(--transition);
+      font-family: var(--font);
+    }
+    .m3-form input:focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 20px var(--neon-blue22);
+    }
+    .m3-form button {
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-xs);
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font);
+    }
+    .m3-form button:hover {
+      transform: scale(1.03);
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* ========== DEVICE LIST ========== */
+    .device-list {
+      list-style: none;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .device-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-xs);
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+    .device-list li:hover {
+      border-color: var(--border-active);
+    }
+    .device-list li.active-device {
+      border-color: var(--neon-blue);
+      background: var(--bg-card-hover);
+      box-shadow: 0 0 20px var(--neon-blue22);
+    }
+    .device-list li .device-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .device-list li .device-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .device-list li .device-id {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+    .device-list li .device-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .device-list li .device-actions button {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: var(--transition);
+      padding: 4px;
+    }
+    .device-list li .device-actions button:hover {
+      color: var(--neon-blue);
+      transform: scale(1.15);
+    }
+    .device-list li .device-actions .delete-btn:hover {
+      color: var(--neon-pink);
+    }
+
+    /* ========== MODULE GRID ========== */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+    }
+    .module-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      padding: 18px 14px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+    .module-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-glow);
+    }
+    .module-card i {
+      font-size: 2.2rem;
+      color: var(--neon-blue);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .module-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .module-card p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin: 4px 0 12px;
+    }
+    .module-card .download-btn {
+      background: linear-gradient(135deg, var(--neon-purple), #7c3aed);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.75rem;
+      width: 100%;
+      font-family: var(--font);
+    }
+    .module-card .download-btn:hover:not(:disabled) {
+      transform: scale(1.04);
+      box-shadow: 0 0 30px var(--neon-purple44);
+    }
+    .module-card .download-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .module-card .module-status {
+      font-size: 0.7rem;
+      margin-top: 6px;
+      color: var(--text-muted);
+    }
+    .module-card .module-status .locked { color: var(--neon-pink); }
+    .module-card .module-status .unlocked { color: var(--neon-green); }
+
+    /* ========== HISTORY ========== */
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item .h-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .history-item .h-left i {
+      font-size: 1.2rem;
+      color: var(--neon-blue);
+      width: 28px;
+      text-align: center;
+    }
+    .history-item .h-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .history-item .h-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .history-item .h-detail {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .history-item .h-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .history-empty {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--text-muted);
+    }
+    .history-empty i {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      color: var(--border-color);
+    }
+
+    /* ========== DOWNLOAD ALL ========== */
+    .download-all-wrap {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .download-all-wrap button {
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      color: #fff;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font);
+    }
+    .download-all-wrap button:hover {
+      transform: scale(1.03);
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* ========== TOAST ========== */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--nav-height) + 20px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      padding: 12px 24px;
+      border-radius: var(--radius-xs);
+      border-left: 4px solid var(--neon-blue);
+      box-shadow: var(--shadow-glow);
+      display: none;
+      font-weight: 500;
+      z-index: 200;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      max-width: 90%;
+      text-align: center;
+      transition: var(--transition);
+    }
+    #toast.show { display: block; animation: fadeIn 0.3s ease; }
+
+    /* ========== LICENSE OVERLAY ========== */
+    #licenseOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10,10,26,0.94);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #licenseBox {
+      background: var(--bg-card);
+      padding: 40px;
+      border-radius: var(--radius);
+      border: 2px solid var(--border-active);
+      box-shadow: var(--shadow-glow);
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      transition: background var(--transition);
+    }
+    #licenseBox h2 {
+      font-size: 2rem;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    #licenseBox p { color: var(--text-secondary); margin-bottom: 20px; }
+    #licenseBox input {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: var(--radius-xs);
+      font-size: 1rem;
+      outline: none;
+      transition: var(--transition);
+      text-align: center;
+      letter-spacing: 2px;
+      font-family: var(--font);
+    }
+    #licenseBox input:focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 30px var(--neon-blue22);
+    }
+    #licenseBox button {
+      margin-top: 16px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      color: #fff;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      font-family: var(--font);
+    }
+    #licenseBox button:hover { transform: scale(1.02); box-shadow: var(--shadow-glow); }
+    #licenseBox .error-msg {
+      color: var(--neon-pink);
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+    #licenseBox .key-hint {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-active); }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 600px) {
+      .container { padding: 12px 12px 80px; }
+      .header-left h1 { font-size: 1.4rem; }
+      .header-right .key-badge { font-size: 0.6rem; padding: 4px 12px; }
+      .m3-card { padding: 16px; }
+      .module-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .bottom-nav .nav-item { padding: 4px 10px; font-size: 0.5rem; min-width: 50px; }
+      .bottom-nav .nav-item i { font-size: 1.2rem; }
+      #licenseBox { padding: 24px; }
+      #toast { font-size: 0.8rem; padding: 10px 16px; bottom: calc(var(--nav-height) + 12px); }
+    }
+    @media (max-width: 400px) {
+      .module-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body id="appBody">
+
+<!-- ===== LICENSE OVERLAY ===== -->
+<div id="licenseOverlay">
+  <div id="licenseBox">
+    <h2>🔑 KEY LISENSI</h2>
+    <p>Masukkan key untuk mengakses dashboard</p>
+    <input type="password" id="licenseKey" placeholder="Masukkan Key..." autofocus />
+    <button id="licenseBtn">✅ Verifikasi</button>
+    <div class="error-msg" id="licenseError">❌ Key salah! Coba lagi.</div>
+    <div class="key-hint">💡 Hubungi Owner: Lana Official</div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app" style="display:none;">
+
+  <!-- HEADER -->
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1><i class="fas fa-brain"></i> Headtrick</h1>
+      </div>
+      <div class="header-right">
+        <span class="key-badge"><i class="fas fa-key"></i> Headtrick123</span>
+        <button class="theme-toggle" id="themeToggle" title="Toggle Light/Dark">
+          <i class="fas fa-moon" id="themeIcon"></i>
+          <span id="themeLabel">Dark</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="container" style="padding-top:0;">
+
+    <!-- PAGE 1: DASHBOARD -->
+    <div class="page active" id="pageDashboard">
+      <div class="m3-card">
+        <h2><i class="fas fa-th-large"></i> Module Dashboard</h2>
+        <p style="color:var(--text-secondary); margin-bottom:16px;">
+          <i class="fas fa-flag"></i> Device terpilih: <strong id="selectedDeviceDisplay" style="color:var(--neon-blue);">Tidak ada</strong>
+          <button id="clearDeviceBtn" style="background:transparent; border:none; color:var(--neon-pink); cursor:pointer; margin-left:8px; font-size:0.8rem;">
+            <i class="fas fa-times-circle"></i> Hapus
+          </button>
+        </p>
+        <div class="module-grid" id="moduleGrid"></div>
+        <div class="download-all-wrap">
+          <button id="downloadAllBtn"><i class="fas fa-download"></i> 📦 Download All Modules</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: DEVICES -->
+    <div class="page" id="pageDevices">
+      <div class="m3-card">
+        <h2><i class="fas fa-plus-circle"></i> ✨ Tambah Device</h2>
+        <form class="m3-form" id="deviceForm">
+          <input type="text" id="deviceName" placeholder="📱 Nama Device (contoh: Redmi Note 10)" required />
+          <button type="submit"><i class="fas fa-save"></i> Tambah</button>
+        </form>
+      </div>
+
+      <div class="m3-card">
+        <h2><i class="fas fa-list"></i> 📋 Daftar Device</h2>
+        <ul class="device-list" id="deviceList">
+          <li style="color:var(--text-muted); padding:20px 0; text-align:center; list-style:none;">✨ Belum ada device.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PAGE 3: HISTORY -->
+    <div class="page" id="pageHistory">
+      <div class="m3-card">
+        <h2><i class="fas fa-clock-rotate-left"></i> 📜 History Status</h2>
+        <div id="historyContainer">
+          <div class="history-empty">
+            <i class="fas fa-history"></i>
+            <p>Belum ada aktivitas download.</p>
+          </div>
+        </div>
+        <button id="clearHistoryBtn" style="margin-top:12px; background:transparent; border:1px solid var(--neon-pink); color:var(--neon-pink); padding:8px 20px; border-radius:30px; cursor:pointer; font-family:var(--font); font-weight:600; transition:var(--transition);">
+          <i class="fas fa-trash-alt"></i> Hapus History
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-page="pageDashboard">
+      <i class="fas fa-th-large"></i>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-page="pageDevices">
+      <i class="fas fa-mobile-alt"></i>
+      <span>Devices</span>
+      <span class="badge" id="deviceBadge">0</span>
+    </button>
+    <button class="nav-item" data-page="pageHistory">
+      <i class="fas fa-clock-rotate-left"></i>
+      <span>History</span>
+      <span class="badge" id="historyBadge">0</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// LICENSE
+// ============================================================
+const LICENSE_KEY = "Headtrick123";
+
+document.getElementById('licenseBtn').addEventListener('click', function() {
+  const input = document.getElementById('licenseKey').value.trim();
+  const errorEl = document.getElementById('licenseError');
+  if (input === LICENSE_KEY) {
+    document.getElementById('licenseOverlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    showToast('✅ Key valid! Selamat datang di Headtrick Admin! 🎉');
+    initApp();
+  } else {
+    errorEl.style.display = 'block';
+    setTimeout(() => errorEl.style.display = 'none', 3000);
+  }
+});
+document.getElementById('licenseKey').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('licenseBtn').click();
+});
+
+// ============================================================
+// THEME
+// ============================================================
+let currentTheme = localStorage.getItem('headtrick_theme') || 'dark';
+function applyTheme(theme) {
+  const root = document.getElementById('htmlRoot');
+  root.setAttribute('data-theme', theme);
+  const icon = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+  if (theme === 'light') {
+    icon.className = 'fas fa-sun';
+    label.textContent = 'Light';
+  } else {
+    icon.className = 'fas fa-moon';
+    label.textContent = 'Dark';
+  }
+  localStorage.setItem('headtrick_theme', theme);
+  currentTheme = theme;
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+});
+applyTheme(currentTheme);
+
+// ============================================================
+// MODULE DATA (lengkap)
+// ============================================================
+const MODULE_DATA = [
+  {
+    id: 'basicx',
+    name: 'BasicX',
+    icon: 'fa-bolt',
+    emoji: '⚡',
+    desc: 'Aim Assist • Optimizer • Drag Headshot Brutall',
+    script: `#!/system/bin/sh\n# BASICX MODULE - Lana Official\n# (isi script lengkap sesuai kode sebelumnya)\necho "BasicX activated"`
+  },
+  {
+    id: 'clofid',
+    name: 'Clofid',
+    icon: 'fa-bullseye',
+    emoji: '🎯',
+    desc: 'Headshot Sync • Hyper Drag Stabilizer',
+    script: `#!/system/bin/sh\n# CLOFID MODULE - Lana Official\necho "Clofid activated"`
+  },
+  {
+    id: 'fluxo',
+    name: 'Fluxo',
+    icon: 'fa-fire',
+    emoji: '🔥',
+    desc: 'Extra Smooth • GPU Hyper Render • Mouse Inject',
+    script: `#!/system/bin/sh\n# FLUXO MODULE - Lana Official\necho "Fluxo activated"`
+  },
+  {
+    id: 'stars',
+    name: 'Stars',
+    icon: 'fa-star',
+    emoji: '⭐',
+    desc: 'All-in-One Ultimate Performance',
+    script: `#!/system/bin/sh\n# STARS MODULE - Lana Official\necho "Stars activated"`
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let devices = JSON.parse(localStorage.getItem('headtrick_devices')) || [];
+let selectedDeviceId = localStorage.getItem('headtrick_selected_device') || null;
+let history = JSON.parse(localStorage.getItem('headtrick_history')) || [];
+
+// ============================================================
+// DOM REFS
+// ============================================================
+const deviceListEl = document.getElementById('deviceList');
+const deviceForm = document.getElementById('deviceForm');
+const deviceNameInput = document.getElementById('deviceName');
+const moduleGrid = document.getElementById('moduleGrid');
+const selectedDisplay = document.getElementById('selectedDeviceDisplay');
+const clearDeviceBtn = document.getElementById('clearDeviceBtn');
+const downloadAllBtn = document.getElementById('downloadAllBtn');
+const toast = document.getElementById('toast');
+const deviceBadge = document.getElementById('deviceBadge');
+const historyBadge = document.getElementById('historyBadge');
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, isError = false) {
+  toast.textContent = msg;
+  toast.style.borderLeftColor = isError ? 'var(--neon-pink)' : 'var(--neon-blue)';
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    this.classList.add('active');
+    const pageId = this.dataset.page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+  });
+});
+
+// ============================================================
+// DEVICE FUNCTIONS
+// ============================================================
+function saveDevices() {
+  localStorage.setItem('headtrick_devices', JSON.stringify(devices));
+  deviceBadge.textContent = devices.length;
+}
+
+function saveSelectedDevice() {
+  if (selectedDeviceId) localStorage.setItem('headtrick_selected_device', selectedDeviceId);
+  else localStorage.removeItem('headtrick_selected_device');
+}
+
+function renderDevices() {
+  if (devices.length === 0) {
+    deviceListEl.innerHTML = `<li style="color:var(--text-muted); padding:20px 0; text-align:center; list-style:none;">✨ Belum ada device.</li>`;
+    return;
+  }
+  let html = '';
+  devices.forEach(dev => {
+    const isActive = (selectedDeviceId === dev.id);
+    html += `
+      <li class="${isActive ? 'active-device' : ''}">
+        <div class="device-info">
+          <span class="device-name">${dev.name}</span>
+          <span class="device-id">ID: ${dev.id}</span>
+        </div>
+        <div class="device-actions">
+          <button class="select-btn" onclick="selectDevice('${dev.id}')" title="Pilih device"><i class="fas fa-check-circle"></i></button>
+          <button class="delete-btn" onclick="deleteDevice('${dev.id}')" title="Hapus device"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </li>
+    `;
+  });
+  deviceListEl.innerHTML = html;
+  deviceBadge.textContent = devices.length;
+}
+
+function addDevice(name) {
+  const id = 'DEV-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
+  const newDev = { id, name: name.trim() };
+  devices.push(newDev);
+  saveDevices();
+  renderDevices();
+  showToast(`✨ Device "${name}" berhasil ditambahkan! 🎉`);
+}
+
+function deleteDevice(id) {
+  if (!confirm('🗑️ Hapus device ini?')) return;
+  devices = devices.filter(d => d.id !== id);
+  if (selectedDeviceId === id) selectedDeviceId = null;
+  saveDevices();
+  saveSelectedDevice();
+  renderDevices();
+  updateSelectedDisplay();
+  renderModules();
+  showToast('🗑️ Device dihapus.');
+}
+
+function selectDevice(id) {
+  selectedDeviceId = id;
+  saveSelectedDevice();
+  renderDevices();
+  updateSelectedDisplay();
+  renderModules();
+  const dev = devices.find(d => d.id === id);
+  showToast(`✅ Device "${dev?.name || id}" dipilih! 📱`);
+}
+
+clearDeviceBtn.addEventListener('click', () => {
+  selectedDeviceId = null;
+  saveSelectedDevice();
+  renderDevices();
+  updateSelectedDisplay();
+  renderModules();
+  showToast('🧹 Pilihan device dibersihkan.');
+});
+
+function updateSelectedDisplay() {
+  if (selectedDeviceId) {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    selectedDisplay.textContent = dev ? dev.name : 'Tidak dikenal';
+  } else {
+    selectedDisplay.textContent = 'Tidak ada';
+  }
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function saveHistory() {
+  localStorage.setItem('headtrick_history', JSON.stringify(history));
+  historyBadge.textContent = history.length;
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <i class="fas fa-history"></i>
+        <p>Belum ada aktivitas download.</p>
+      </div>
+    `;
+    return;
+  }
+  let html = '';
+  history.slice().reverse().forEach(item => {
+    const iconMap = {
+      'basicx': 'fa-bolt',
+      'clofid': 'fa-bullseye',
+      'fluxo': 'fa-fire',
+      'stars': 'fa-star'
+    };
+    const icon = iconMap[item.moduleId] || 'fa-file-code';
+    html += `
+      <div class="history-item">
+        <div class="h-left">
+          <i class="fas ${icon}"></i>
+          <div class="h-info">
+            <span class="h-name">${item.moduleName}</span>
+            <span class="h-detail">Device: ${item.deviceName || 'Tidak ada'} • ID: ${item.deviceId || 'N/A'}</span>
+          </div>
+        </div>
+        <span class="h-time">${item.time}</span>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+  historyBadge.textContent = history.length;
+}
+
+document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+  if (!confirm('Hapus semua history?')) return;
+  history = [];
+  saveHistory();
+  renderHistory();
+  showToast('🧹 History dibersihkan.');
+});
+
+function addHistory(moduleId, moduleName, deviceName, deviceId) {
+  const now = new Date();
+  const timeStr = now.toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  history.push({
+    moduleId,
+    moduleName,
+    deviceName: deviceName || 'Tidak ada',
+    deviceId: deviceId || 'N/A',
+    time: timeStr
+  });
+  if (history.length > 100) history.shift();
+  saveHistory();
+  renderHistory();
+}
+
+// ============================================================
+// COMMAND.TXT GENERATOR (dengan format baru)
+// ============================================================
+function getCommandText(moduleName, deviceBinding) {
+  const deviceInfo = deviceBinding
+    ? `📱 Device : ${deviceBinding.name} (ID: ${deviceBinding.id})`
+    : '🚫 Tidak ada device terpilih';
+  return `╔══════════════════════════════════════════════════════════════╗
+║             🧠 HEADTRICK MODULE - ${moduleName.toUpperCase()}           ║
+║             👑 Owner: Lana Official                                   ║
+║             📦 Version: 1.0                                          ║
+║             ${deviceInfo}                                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+📌 CARA MENJALANKAN:
+   ╔══════════════════════════════════════════════════════════════╗
+   ║  sh /sdcard/Headtrick-run.sh                                 ║
+   ╚══════════════════════════════════════════════════════════════╝
+
+🔄 UNTUK RESET KE DEFAULT:
+   ╔══════════════════════════════════════════════════════════════╗
+   ║  sh /sdcard/Headtrick-reset.sh                               ║
+   ╚══════════════════════════════════════════════════════════════╝
+
+⚠️ PASTIKAN:
+   ✅ File sudah di-chmod +x
+   ✅ Dijalankan di Brevent / Termux
+   ✅ Device terdaftar dan terpilih
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ Lana Official © 2026 | Version 1.0 | Made with ❤️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+// ============================================================
+// DOWNLOAD ENGINE
+// ============================================================
+function obfuscateShell(script) {
+  const encoded = btoa(unescape(encodeURIComponent(script)));
+  return `#!/system/bin/sh\neval "$(echo '${encoded}' | base64 -d)"\n`;
+}
+
+function getResetScript() {
+  return `#!/system/bin/sh\n# 🔄 RESET HEADTRICK MODULE\necho "🔄 Resetting settings to default..."\nsleep 1\nsettings put system pointer_speed 3\nsettings put system accelerate_pointer 0\nsettings put system touch_pressure_scale 1.0\nsettings put global animator_duration_scale 1\nsettings put global transition_animation_scale 1\nsettings put global window_animation_scale 1\necho "✅ Reset selesai! ✨"`;
+}
+
+async function downloadModule(moduleId) {
+  const mod = MODULE_DATA.find(m => m.id === moduleId);
+  if (!mod) return;
+
+  const deviceBinding = selectedDeviceId ? devices.find(d => d.id === selectedDeviceId) : null;
+  const deviceName = deviceBinding ? deviceBinding.name : 'Unknown';
+  const deviceId = deviceBinding ? deviceBinding.id : 'N/A';
+
+  const zip = new JSZip();
+  const obf = obfuscateShell(mod.script);
+  zip.file('Headtrick-run.sh', obf);
+  zip.file('Headtrick-reset.sh', getResetScript());
+  zip.file('command.txt', getCommandText(mod.name, deviceBinding));
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  saveAs(blob, `Headtrick_${mod.name}_${deviceName.replace(/\s/g, '_')}.zip`);
+  showToast(`✅ Download ${mod.emoji} ${mod.name} selesai! 🎉`);
+
+  // Simpan history
+  addHistory(mod.id, mod.name, deviceName, deviceId);
+}
+
+async function downloadAllModules() {
+  const deviceBinding = selectedDeviceId ? devices.find(d => d.id === selectedDeviceId) : null;
+  const deviceName = deviceBinding ? deviceBinding.name : 'Unknown';
+  const deviceId = deviceBinding ? deviceBinding.id : 'N/A';
+
+  const zip = new JSZip();
+
+  MODULE_DATA.forEach(mod => {
+    const obf = obfuscateShell(mod.script);
+    zip.file(`${mod.id}-run.sh`, obf);
+    zip.file(`${mod.id}-reset.sh`, getResetScript());
+    zip.file(`${mod.id}/command.txt`, getCommandText(mod.name, deviceBinding));
+  });
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  saveAs(blob, `Headtrick_All_Modules_${deviceName.replace(/\s/g, '_')}.zip`);
+  showToast(`📦 Download semua module selesai! 🎉✨`);
+
+  // Simpan history untuk semua module
+  MODULE_DATA.forEach(mod => {
+    addHistory(mod.id, mod.name, deviceName, deviceId);
+  });
+}
+
+// ============================================================
+// RENDER MODULES
+// ============================================================
+function renderModules() {
+  const deviceBinding = selectedDeviceId ? devices.find(d => d.id === selectedDeviceId) : null;
+  const isLocked = !deviceBinding;
+  let html = '';
+  MODULE_DATA.forEach(mod => {
+    const statusIcon = isLocked ? '🔒' : '🔓';
+    const statusText = isLocked ? 'Pilih device dulu!' : 'Ready';
+    const statusColor = isLocked ? 'locked' : 'unlocked';
+    html += `
+      <div class="module-card">
+        <i class="fas ${mod.icon}"></i>
+        <h3>${mod.emoji} ${mod.name}</h3>
+        <p>${mod.desc}</p>
+        <button class="download-btn" data-module="${mod.id}" ${isLocked ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+          <i class="fas fa-download"></i> Download ${mod.name}
+        </button>
+        <div class="module-status">
+          <span class="${statusColor}">${statusIcon} ${statusText}</span>
+        </div>
+      </div>
+    `;
+  });
+  moduleGrid.innerHTML = html;
+
+  document.querySelectorAll('.download-btn:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const mid = this.dataset.module;
+      downloadModule(mid);
+    });
+  });
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+deviceForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = deviceNameInput.value.trim();
+  if (!name) { showToast('⚠️ Masukkan nama device!', true); return; }
+  addDevice(name);
+  deviceNameInput.value = '';
+});
+
+downloadAllBtn.addEventListener('click', downloadAllModules);
+
+// ============================================================
+// INIT APP
+// ============================================================
+function initApp() {
+  renderDevices();
+  renderModules();
+  renderHistory();
+  updateSelectedDisplay();
+  deviceBadge.textContent = devices.length;
+  historyBadge.textContent = history.length;
+  showToast('🚀 Dashboard siap digunakan! Pilih device untuk unlock module. ✨');
+}
+</script>
+</body>
+</html>
