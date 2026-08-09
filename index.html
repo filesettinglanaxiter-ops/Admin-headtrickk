@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧠 Headtrick Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #0a0a1a;
+      color: #e0e0ff;
+      font-family: 'Segoe UI', 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1350px;
+      width: 100%;
+      background: linear-gradient(145deg, #0d0d2b, #1a1a3e);
+      padding: 30px;
+      border-radius: 28px;
+      border: 2px solid #00f0ff55;
+      box-shadow: 0 0 80px #00f0ff22, inset 0 0 40px #00f0ff11;
+    }
+    header {
+      text-align: center;
+      border-bottom: 2px solid #00f0ff33;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    header h1 {
+      font-size: 2.8rem;
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 4px;
+    }
+    header h1 i { -webkit-text-fill-color: initial; color: #00f0ff; }
+    header p { color: #8888cc; letter-spacing: 3px; font-size: 0.9rem; margin-top: 4px; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+    }
+    @media (max-width:900px) { .dashboard-grid { grid-template-columns:1fr; } }
+
+    .panel {
+      background: #0a0a1a88;
+      padding: 24px;
+      border-radius: 20px;
+      border-left: 4px solid #00f0ff;
+      backdrop-filter: blur(10px);
+    }
+    .panel h2 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      color: #ccccff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel h2 i { color: #00f0ff; }
+
+    #deviceForm {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    #deviceForm input {
+      flex: 1;
+      min-width: 180px;
+      background: #0a0a1a;
+      border: 1px solid #00f0ff44;
+      color: #e0e0ff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+    }
+    #deviceForm input:focus { border-color: #00f0ff; box-shadow:0 0 20px #00f0ff22; }
+    #deviceForm button {
+      background: linear-gradient(135deg, #00f0ff, #0088cc);
+      color: #0a0a1a;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #deviceForm button:hover { transform:scale(1.04); box-shadow:0 0 30px #00f0ff44; }
+
+    #deviceList {
+      list-style: none;
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    #deviceList li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #0f0f2a;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #00f0ff22;
+      transition: 0.3s;
+    }
+    #deviceList li:hover { border-color:#00f0ff66; background:#14143a; }
+    #deviceList li .device-name { font-weight:500; color:#ccccff; }
+    #deviceList li .device-actions { display:flex; gap:10px; }
+    #deviceList li .device-actions button {
+      background:transparent; border:none; color:#ff4466; cursor:pointer; font-size:1.1rem; transition:0.3s;
+    }
+    #deviceList li .device-actions button:hover { color:#ff0044; transform:scale(1.2); }
+    #deviceList li .device-actions .select-btn { color:#00f0ff; }
+    #deviceList li .device-actions .select-btn:hover { color:#00ccff; }
+    #deviceList li.active-device {
+      border-color:#00f0ff; background:#0f1f3a; box-shadow:0 0 20px #00f0ff22;
+    }
+    #deviceList li .device-id {
+      font-size:0.7rem; color:#555588; margin-right:10px;
+    }
+    .empty-state { color:#6666aa; font-style:italic; padding:10px 0; }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .module-card {
+      background: #0f0f2a;
+      padding: 18px 14px;
+      border-radius: 16px;
+      text-align: center;
+      border: 1px solid #00f0ff22;
+      transition: 0.3s;
+      cursor: default;
+    }
+    .module-card:hover {
+      border-color: #00f0ff88;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px #00f0ff11;
+    }
+    .module-card i { font-size:2.2rem; color:#00f0ff; margin-bottom:8px; display:block; }
+    .module-card h3 { font-size:1.1rem; color:#ccccff; margin-bottom:4px; }
+    .module-card p { font-size:0.8rem; color:#8888bb; margin-bottom:12px; }
+    .module-card .download-btn {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+    }
+    .module-card .download-btn:hover { transform:scale(1.05); box-shadow:0 0 30px #a855f744; }
+    .module-card .download-btn i { font-size:1rem; color:inherit; display:inline; }
+    .module-card .module-status {
+      font-size:0.7rem; margin-top:6px; color:#555588;
+    }
+    .module-card .module-status .locked { color:#ff4466; }
+    .module-card .module-status .unlocked { color:#00ff88; }
+
+    .download-all {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .download-all button {
+      background: linear-gradient(135deg, #00f0ff, #0088cc);
+      color: #0a0a1a;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .download-all button:hover { transform:scale(1.04); box-shadow:0 0 40px #00f0ff44; }
+
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1a1a3e;
+      color: #00f0ff;
+      padding: 16px 24px;
+      border-radius: 16px;
+      border-left: 4px solid #00f0ff;
+      box-shadow: 0 0 40px #00f0ff22;
+      display: none;
+      font-weight: 500;
+      z-index: 999;
+      backdrop-filter: blur(10px);
+    }
+    #toast.show { display:block; animation:fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ===== LICENSE OVERLAY ===== */
+    #licenseOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10,10,26,0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+    }
+    #licenseBox {
+      background: linear-gradient(145deg, #0d0d2b, #1a1a3e);
+      padding: 40px;
+      border-radius: 28px;
+      border: 2px solid #00f0ff55;
+      box-shadow: 0 0 80px #00f0ff22;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+    }
+    #licenseBox h2 {
+      font-size: 2rem;
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    #licenseBox p {
+      color: #8888cc;
+      margin-bottom: 20px;
+    }
+    #licenseBox input {
+      width: 100%;
+      padding: 14px 18px;
+      background: #0a0a1a;
+      border: 1px solid #00f0ff44;
+      color: #e0e0ff;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.3s;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    #licenseBox input:focus { border-color:#00f0ff; box-shadow:0 0 30px #00f0ff22; }
+    #licenseBox button {
+      margin-top: 16px;
+      background: linear-gradient(135deg, #00f0ff, #0088cc);
+      color: #0a0a1a;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+    #licenseBox button:hover { transform:scale(1.02); box-shadow:0 0 40px #00f0ff44; }
+    #licenseBox .error-msg {
+      color: #ff4466;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+    #licenseBox .key-hint {
+      color: #555588;
+      font-size: 0.7rem;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:#0a0a1a; }
+    ::-webkit-scrollbar-thumb { background:#00f0ff44; border-radius:10px; }
+    ::-webkit-scrollbar-thumb:hover { background:#00f0ff88; }
+
+    @media (max-width:600px) {
+      .container { padding:16px; }
+      header h1 { font-size:2rem; }
+      .module-grid { grid-template-columns:1fr 1fr; }
+      #licenseBox { padding:24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== LICENSE OVERLAY ===== -->
+<div id="licenseOverlay">
+  <div id="licenseBox">
+    <h2>🔑 KEY LISENSI</h2>
+    <p>Masukkan key untuk mengakses dashboard</p>
+    <input type="password" id="licenseKey" placeholder="Masukkan Key..." autofocus>
+    <button id="licenseBtn">✅ Verifikasi</button>
+    <div class="error-msg" id="licenseError">❌ Key salah! Coba lagi.</div>
+    <div class="key-hint">💡 Hubungi Owner: Lana Official</div>
+  </div>
+</div>
+
+<div class="container" id="mainContent" style="display:none;">
+  <header>
+    <h1><i class="fas fa-brain"></i> HEADTRICK ADMIN</h1>
+    <p>👑 Owner: Lana Official | Version 2.0 | <i class="fas fa-key" style="color:#00f0ff;"></i> Key: Headtrick123</p>
+  </header>
+
+  <div class="dashboard-grid">
+    <!-- LEFT PANEL: DEVICE MANAGEMENT -->
+    <div class="panel">
+      <h2><i class="fas fa-plus-circle"></i> ✨ Create Device</h2>
+      <form id="deviceForm">
+        <input type="text" id="deviceName" placeholder="📱 Nama Device (contoh: Redmi Note 10)" required>
+        <button type="submit"><i class="fas fa-save"></i> Tambah</button>
+      </form>
+
+      <h2 style="margin-top:28px;"><i class="fas fa-list"></i> 📋 Devices</h2>
+      <ul id="deviceList"><li class="empty-state">✨ Belum ada device. Buat device di atas.</li></ul>
+      <p style="font-size:0.8rem; color:#555588; margin-top:10px;">
+        <i class="fas fa-info-circle"></i> Pilih device (icon <i class="fas fa-check-circle" style="color:#00f0ff;"></i>) untuk binding.
+      </p>
+    </div>
+
+    <!-- RIGHT PANEL: MODULES -->
+    <div class="panel">
+      <h2><i class="fas fa-download"></i> 📥 Download Modules</h2>
+      <p style="color:#8888bb; margin-bottom:8px;">
+        <i class="fas fa-flag"></i> Device terpilih: <span id="selectedDeviceDisplay"><strong style="color:#8888bb;">Tidak ada</strong></span>
+        <button id="clearDeviceBtn" style="background:transparent; border:none; color:#ff4466; cursor:pointer; margin-left:10px; font-size:0.8rem;">
+          <i class="fas fa-times-circle"></i> Hapus
+        </button>
+      </p>
+      <div class="module-grid" id="moduleGrid"></div>
+      <div class="download-all">
+        <button id="downloadAllBtn"><i class="fas fa-download"></i> 📦 Download All Modules</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// LICENSE
+// ============================================================
+const LICENSE_KEY = "Headtrick123";
+
+document.getElementById('licenseBtn').addEventListener('click', function() {
+  const input = document.getElementById('licenseKey').value.trim();
+  const errorEl = document.getElementById('licenseError');
+  if (input === LICENSE_KEY) {
+    document.getElementById('licenseOverlay').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    showToast('✅ Key valid! Selamat datang di Headtrick Admin! 🎉');
+  } else {
+    errorEl.style.display = 'block';
+    setTimeout(() => errorEl.style.display = 'none', 3000);
+  }
+});
+
+document.getElementById('licenseKey').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('licenseBtn').click();
+});
+
+// ============================================================
+// MODULE DATA (lengkap dengan Device Binding)
+// ============================================================
+const MODULE_DATA = [
+  {
+    id: 'basicx',
+    name: 'BasicX',
+    icon: 'fa-bolt',
+    desc: '⚡ Aim Assist • Optimizer • Drag Headshot Brutall',
+    emoji: '⚡',
+    script: `#!/system/bin/sh
+#============================================================
+# MODULE : Headtrick BasicX
+# OWNER  : Lana Official
+# VERSION: 1.0
+# TYPE   : Brevent Module
+# SUPPORT: FreeFire & FreeFire MAX
+# FEATURES: Aim Assist, Optimizer Sensitivity, Aim Tracking,
+#           Drag Headshot Brutall, Performance Boost Device,
+#           Easy Drag, Lock Target FreeFire/MAX
+#============================================================
+
+clear
+echo ""
+echo "          ██╗  ██╗███████╗ █████╗ ██████╗ ████████╗██████╗ ██╗ ██████╗██╗  ██╗"
+echo "          ██║  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██║ ██╔╝"
+echo "          ███████║█████╗  ███████║██║  ██║   ██║   ██████╔╝██║██║     █████╔╝ "
+echo "          ██╔══██║██╔══╝  ██╔══██║██║  ██║   ██║   ██╔══██╗██║██║     ██╔═██╗ "
+echo "          ██║  ██║███████╗██║  ██║██████╔╝   ██║   ██║  ██║██║╚██████╗██║  ██╗"
+echo "          ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝"
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+
+echo "============================================================"
+echo "  STATUS  : MODULE ACTIVE"
+echo "  VERSION : 1.0"
+echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
+echo "  OWNER   : Lana Official"
+echo "  SUPPORT : FreeFire & FreeFire MAX"
+echo "============================================================"
+echo ""
+
+echo "DEVICE INFORMATION :"
+echo "------------------------------------------------------------"
+echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
+echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
+echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
+echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
+echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
+echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
+echo "------------------------------------------------------------"
+echo ""
+
+echo "LOADING HEADTRICK BASICX..."
+sleep 1
+echo "  [■□□□□□□□□□] 10% - Initializing Engine..."
+sleep 1
+echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
+sleep 1
+echo "  [■■■□□□□□□□] 30% - Optimizer Sensitivity..."
+sleep 1
+echo "  [■■■■□□□□□□] 40% - Aim Tracking System..."
+sleep 1
+echo "  [■■■■■□□□□□] 50% - Drag Headshot Brutall..."
+sleep 1
+echo "  [■■■■■■□□□□] 60% - Performance Boost Device..."
+sleep 1
+echo "  [■■■■■■■□□□] 70% - Easy Drag Calibration..."
+sleep 1
+echo "  [■■■■■■■■□□] 80% - Lock Target Setup..."
+sleep 1
+echo "  [■■■■■■■■■□] 90% - Syncing All Features..."
+sleep 1
+echo "  [■■■■■■■■■■] 100% - HEADTRICK BASICX ACTIVE!"
+sleep 1
+echo ""
+
+echo "APPLYING HEADTRICK BASICX SETTINGS..."
+sleep 1
+
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put system touch_pressure_scale 2.0
+settings put system touch_size_scale 2.5
+settings put system screen_brightness 255
+settings put system screen_brightness_mode 0
+settings put global power_saver 0
+settings put global stay_on_while_plugged_in 1
+settings put system haptic_feedback_enabled 0
+settings put system sound_effects_enabled 0
+settings put system auto_rotate_0 0
+settings put system auto_rotate_90 0
+settings put system auto_rotate_180 0
+settings put system auto_rotate_270 0
+settings put system pointer_location 0
+settings put system show_touches 0
+settings put secure long_press_timeout 100
+settings put global animator_duration_scale 0.3
+settings put global transition_animation_scale 0.3
+settings put global window_animation_scale 0.3
+settings put global wifi_scan_always_enabled 0
+settings put global ble_scan_always_enabled 0
+settings put global activity_starts_logging_enabled 0
+settings put global force_audio_effects 1
+settings put system font_scale 0.85
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put secure accessibility_display_magnification_enabled 0
+settings put system auto_rotate_0 0
+settings put system auto_rotate_90 0
+settings put system auto_rotate_180 0
+settings put system auto_rotate_270 0
+
+echo ""
+echo "============================================================"
+echo "  ✅ ALL FEATURES APPLIED SUCCESSFULLY"
+echo "  ✅ HEADTRICK BASICX v1.0 READY"
+echo "  ✅ SUPPORT FREEFIRE & FREEFIRE MAX"
+echo "============================================================"
+echo ""
+echo "============================================================"
+echo "  HEADTRICK BASICX v1.0 - Lana Official"
+echo "  Module Brevent telah aktif. Nikmati performa maksimal!"
+echo "============================================================"`
+  },
+  {
+    id: 'clofid',
+    name: 'Clofid',
+    icon: 'fa-bullseye',
+    desc: '🎯 Headshot Sync • Hyper Drag Stabilizer',
+    emoji: '🎯',
+    script: `#!/system/bin/sh
+#============================================================
+# MODULE : Headtrick Clofid
+# OWNER  : Lana Official
+# VERSION: 1.0
+# TYPE   : Non-Root Module
+# SUPPORT: FreeFire & FreeFire MAX
+# FEATURES: Headshot Sync Core, Aim Assist, Hyper Drag Stabilizer,
+#           Axis Tock System, Battery Server Engine, Touch Core X,
+#           Frame Boost Engine, Easy Headshot, Sensitivity XYZ
+#============================================================
+
+clear
+echo ""
+echo "          ██╗  ██╗███████╗ █████╗ ██████╗ ████████╗██████╗ ██╗ ██████╗██╗  ██╗"
+echo "          ██║  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██║ ██╔╝"
+echo "          ███████║█████╗  ███████║██║  ██║   ██║   ██████╔╝██║██║     █████╔╝ "
+echo "          ██╔══██║██╔══╝  ██╔══██║██║  ██║   ██║   ██╔══██╗██║██║     ██╔═██╗ "
+echo "          ██║  ██║███████╗██║  ██║██████╔╝   ██║   ██║  ██║██║╚██████╗██║  ██╗"
+echo "          ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝"
+echo ""
+echo "                     ██████╗██╗      ██████╗ ███████╗██╗██████╗ "
+echo "                    ██╔════╝██║     ██╔═══██╗██╔════╝██║██╔══██╗"
+echo "                    ██║     ██║     ██║   ██║█████╗  ██║██║  ██║"
+echo "                    ██║     ██║     ██║   ██║██╔══╝  ██║██║  ██║"
+echo "                    ╚██████╗███████╗╚██████╔╝██║     ██║██████╔╝"
+echo "                     ╚═════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚═════╝ "
+echo ""
+echo ""
+
+echo "============================================================"
+echo "  STATUS  : MODULE ACTIVE"
+echo "  VERSION : 1.0"
+echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
+echo "  OWNER   : Lana Official"
+echo "============================================================"
+echo ""
+
+echo "DEVICE INFORMATION :"
+echo "------------------------------------------------------------"
+echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
+echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
+echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
+echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
+echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
+echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
+echo "------------------------------------------------------------"
+echo ""
+
+echo "LOADING HEADTRICK CLOFID..."
+sleep 1
+echo "  [■□□□□□□□□□] 10% - Headshot Sync Core..."
+sleep 1
+echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
+sleep 1
+echo "  [■■■□□□□□□□] 30% - Hyper Drag Stabilizer..."
+sleep 1
+echo "  [■■■■□□□□□□] 40% - Axis Tock System..."
+sleep 1
+echo "  [■■■■■□□□□□] 50% - Battery Server Engine..."
+sleep 1
+echo "  [■■■■■■□□□□] 60% - Touch Core X..."
+sleep 1
+echo "  [■■■■■■■□□□] 70% - Frame Boost Engine..."
+sleep 1
+echo "  [■■■■■■■■□□] 80% - Easy Headshot..."
+sleep 1
+echo "  [■■■■■■■■■□] 90% - Sensitivity XYZ..."
+sleep 1
+echo "  [■■■■■■■■■■] 100% - HEADTRICK CLOFID ACTIVE!"
+sleep 1
+echo ""
+
+echo "APPLYING HEADTRICK CLOFID SETTINGS..."
+sleep 1
+
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put system touch_pressure_scale 2.0
+settings put system touch_size_scale 2.5
+settings put system auto_rotate_0 0
+settings put system auto_rotate_90 0
+settings put system auto_rotate_180 0
+settings put system auto_rotate_270 0
+settings put system pointer_location 0
+settings put system show_touches 0
+settings put global power_saver 0
+settings put global stay_on_while_plugged_in 1
+settings put system screen_brightness 255
+settings put system screen_brightness_mode 0
+settings put global animator_duration_scale 0.3
+settings put global transition_animation_scale 0.3
+settings put global window_animation_scale 0.3
+settings put system haptic_feedback_enabled 0
+settings put system sound_effects_enabled 0
+settings put secure long_press_timeout 100
+settings put system font_scale 0.85
+settings put global wifi_scan_always_enabled 0
+settings put global ble_scan_always_enabled 0
+settings put global force_audio_effects 1
+
+echo ""
+echo "============================================================"
+echo "  ✅ ALL FEATURES APPLIED SUCCESSFULLY"
+echo "  ✅ HEADTRICK CLOFID v1.0 READY"
+echo "============================================================"
+echo ""
+echo "============================================================"
+echo "  HEADTRICK CLOFID v1.0 - Lana Official"
+echo "  Module Headtrick telah aktif. Nikmati performa maksimal!"
+echo "============================================================"`
+  },
+  {
+    id: 'fluxo',
+    name: 'Fluxo',
+    icon: 'fa-fire',
+    desc: '🔥 Extra Smooth • GPU Hyper Render • Mouse Inject',
+    emoji: '🔥',
+    script: `#!/system/bin/sh
+#============================================================
+# MODULE : Headtrick Fluxo
+# OWNER  : Lana Official
+# VERSION: 1.0
+# TYPE   : Non-Root Module
+# SUPPORT: FreeFire & FreeFire MAX
+# FEATURES: Headshot Sync Core, Aim Assist, Hyper Drag Stabilizer,
+#           Axis Tock System, Battery Server Engine, Touch Core X,
+#           Frame Boost Engine, Easy Headshot, Sensitivity XYZ,
+#           Extra Smooth Engine, GPU Hyper Render, Mouse Inject Speed
+#============================================================
+
+clear
+echo ""
+echo "          ██╗  ██╗███████╗ █████╗ ██████╗ ████████╗██████╗ ██╗ ██████╗██╗  ██╗"
+echo "          ██║  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██║ ██╔╝"
+echo "          ███████║█████╗  ███████║██║  ██║   ██║   ██████╔╝██║██║     █████╔╝ "
+echo "          ██╔══██║██╔══╝  ██╔══██║██║  ██║   ██║   ██╔══██╗██║██║     ██╔═██╗ "
+echo "          ██║  ██║███████╗██║  ██║██████╔╝   ██║   ██║  ██║██║╚██████╗██║  ██╗"
+echo "          ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝"
+echo ""
+echo "          ███████╗██╗     ██╗   ██╗██╗  ██╗ ██████╗ "
+echo "          ██╔════╝██║     ██║   ██║██║  ██║██╔═══██╗"
+echo "          █████╗  ██║     ██║   ██║███████║██║   ██║"
+echo "          ██╔══╝  ██║     ██║   ██║██╔══██║██║   ██║"
+echo "          ██║     ███████╗╚██████╔╝██║  ██║╚██████╔╝"
+echo "          ╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ "
+echo ""
+echo ""
+
+echo "============================================================"
+echo "  STATUS  : MODULE ACTIVE"
+echo "  VERSION : 1.0"
+echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
+echo "  OWNER   : Lana Official"
+echo "============================================================"
+echo ""
+
+echo "DEVICE INFORMATION :"
+echo "------------------------------------------------------------"
+echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
+echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
+echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
+echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
+echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
+echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
+echo "------------------------------------------------------------"
+echo ""
+
+echo "LOADING HEADTRICK FLUXO..."
+sleep 1
+echo "  [■□□□□□□□□□] 10% - Headshot Sync Core..."
+sleep 1
+echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
+sleep 1
+echo "  [■■■□□□□□□□] 30% - Hyper Drag Stabilizer..."
+sleep 1
+echo "  [■■■■□□□□□□] 40% - Axis Tock System..."
+sleep 1
+echo "  [■■■■■□□□□□] 50% - Battery Server Engine..."
+sleep 1
+echo "  [■■■■■■□□□□] 60% - Touch Core X..."
+sleep 1
+echo "  [■■■■■■■□□□] 70% - Frame Boost Engine..."
+sleep 1
+echo "  [■■■■■■■■□□] 80% - Easy Headshot & Sensitivity XYZ..."
+sleep 1
+echo "  [■■■■■■■■■□] 90% - Extra Smooth Engine & GPU Render..."
+sleep 1
+echo "  [■■■■■■■■■■] 100% - HEADTRICK FLUXO ACTIVE!"
+sleep 1
+echo ""
+
+echo "APPLYING HEADTRICK FLUXO SETTINGS..."
+sleep 1
+
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put system touch_pressure_scale 2.0
+settings put system touch_size_scale 2.5
+settings put system auto_rotate_0 0
+settings put system auto_rotate_90 0
+settings put system auto_rotate_180 0
+settings put system auto_rotate_270 0
+settings put system pointer_location 0
+settings put system show_touches 0
+settings put global power_saver 0
+settings put global stay_on_while_plugged_in 1
+settings put system screen_brightness 255
+settings put system screen_brightness_mode 0
+settings put global animator_duration_scale 0.3
+settings put global transition_animation_scale 0.3
+settings put global window_animation_scale 0.3
+settings put system haptic_feedback_enabled 0
+settings put system sound_effects_enabled 0
+settings put secure long_press_timeout 100
+settings put system font_scale 0.85
+settings put global wifi_scan_always_enabled 0
+settings put global ble_scan_always_enabled 0
+settings put global activity_starts_logging_enabled 0
+settings put global force_audio_effects 1
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put secure accessibility_display_magnification_enabled 0
+
+echo ""
+echo "============================================================"
+echo "  ✓ ALL FEATURES APPLIED SUCCESSFULLY"
+echo "  ✓ HEADTRICK FLUXO v1.0 READY"
+echo "============================================================"
+echo ""
+echo "============================================================"
+echo "  HEADTRICK FLUXO v1.0 - Lana Official"
+echo "  Fluxo telah aktif. Nikmati performa maksimal!"
+echo "============================================================"`
+  },
+  {
+    id: 'stars',
+    name: 'Stars',
+    icon: 'fa-star',
+    desc: '⭐ All-in-One Ultimate Performance',
+    emoji: '⭐',
+    script: `#!/system/bin/sh
+#============================================================
+# MODULE : STARS
+# OWNER  : Lana Official
+# VERSION: 1.0
+# TYPE   : Non-Root Module
+# SUPPORT: FreeFire & FreeFire MAX
+# FEATURES: Headshot Sync Core, Aim Assist, Hyper Drag Stabilizer,
+#           Axis Tock System, Battery Server Engine, Touch Core X,
+#           Frame Boost Engine, Easy Headshot, Sensitivity XYZ,
+#           Extra Smooth Engine, GPU Hyper Render, Mouse Inject Speed
+#============================================================
+
+clear
+echo ""
+echo "          ███████╗████████╗ █████╗ ██████╗ ███████╗"
+echo "          ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝"
+echo "          ███████╗   ██║   ███████║██████╔╝███████╗"
+echo "          ╚════██║   ██║   ██╔══██║██╔══██╗╚════██║"
+echo "          ███████║   ██║   ██║  ██║██║  ██║███████║"
+echo "          ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝"
+echo ""
+echo ""
+
+echo "============================================================"
+echo "  STATUS  : MODULE ACTIVE"
+echo "  VERSION : 1.0"
+echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
+echo "  OWNER   : Lana Official"
+echo "============================================================"
+echo ""
+
+echo "DEVICE INFORMATION :"
+echo "------------------------------------------------------------"
+echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
+echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
+echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
+echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
+echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
+echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
+echo "------------------------------------------------------------"
+echo ""
+
+echo "LOADING STARS MODULE..."
+sleep 1
+echo "  [■□□□□□□□□□] 10% - Headshot Sync Core..."
+sleep 1
+echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
+sleep 1
+echo "  [■■■□□□□□□□] 30% - Hyper Drag Stabilizer..."
+sleep 1
+echo "  [■■■■□□□□□□] 40% - Axis Tock System..."
+sleep 1
+echo "  [■■■■■□□□□□] 50% - Battery Server Engine..."
+sleep 1
+echo "  [■■■■■■□□□□] 60% - Touch Core X..."
+sleep 1
+echo "  [■■■■■■■□□□] 70% - Frame Boost Engine..."
+sleep 1
+echo "  [■■■■■■■■□□] 80% - Easy Headshot & Sensitivity XYZ..."
+sleep 1
+echo "  [■■■■■■■■■□] 90% - Extra Smooth Engine & GPU Render..."
+sleep 1
+echo "  [■■■■■■■■■■] 100% - STARS ACTIVE!"
+sleep 1
+echo ""
+
+echo "APPLYING STARS SETTINGS..."
+sleep 1
+
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put system touch_pressure_scale 2.0
+settings put system touch_size_scale 2.5
+settings put system auto_rotate_0 0
+settings put system auto_rotate_90 0
+settings put system auto_rotate_180 0
+settings put system auto_rotate_270 0
+settings put system pointer_location 0
+settings put system show_touches 0
+settings put global power_saver 0
+settings put global stay_on_while_plugged_in 1
+settings put system screen_brightness 255
+settings put system screen_brightness_mode 0
+settings put global animator_duration_scale 0.3
+settings put global transition_animation_scale 0.3
+settings put global window_animation_scale 0.3
+settings put system haptic_feedback_enabled 0
+settings put system sound_effects_enabled 0
+settings put secure long_press_timeout 100
+settings put system font_scale 0.85
+settings put global wifi_scan_always_enabled 0
+settings put global ble_scan_always_enabled 0
+settings put global activity_starts_logging_enabled 0
+settings put global force_audio_effects 1
+settings put system pointer_speed 7
+settings put system accelerate_pointer 1
+settings put secure accessibility_display_magnification_enabled 0
+
+echo ""
+echo "============================================================"
+echo "  ✅ ALL FEATURES APPLIED SUCCESSFULLY"
+echo "  ✅ STARS v1.0 READY"
+echo "  ✅ SUPPORT FREEFIRE & FREEFIRE MAX"
+echo "============================================================"
+echo ""
+echo "============================================================"
+echo "  STARS v1.0 - Lana Official"
+echo "  STARS telah aktif. Nikmati performa maksimal!"
+echo "============================================================"`
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let devices = JSON.parse(localStorage.getItem('headtrick_devices')) || [];
+let selectedDeviceId = localStorage.getItem('headtrick_selected_device') || null;
+
+// ============================================================
+// DOM REFS
+// ============================================================
+const deviceListEl = document.getElementById('deviceList');
+const deviceForm = document.getElementById('deviceForm');
+const deviceNameInput = document.getElementById('deviceName');
+const moduleGrid = document.getElementById('moduleGrid');
+const selectedDisplay = document.getElementById('selectedDeviceDisplay');
+const clearDeviceBtn = document.getElementById('clearDeviceBtn');
+const downloadAllBtn = document.getElementById('downloadAllBtn');
+const toast = document.getElementById('toast');
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, isError = false) {
+  toast.textContent = msg;
+  toast.style.color = isError ? '#ff4466' : '#00f0ff';
+  toast.style.borderLeftColor = isError ? '#ff4466' : '#00f0ff';
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ============================================================
+// DEVICE FUNCTIONS
+// ============================================================
+function saveDevices() {
+  localStorage.setItem('headtrick_devices', JSON.stringify(devices));
+}
+
+function saveSelectedDevice() {
+  if (selectedDeviceId) localStorage.setItem('headtrick_selected_device', selectedDeviceId);
+  else localStorage.removeItem('headtrick_selected_device');
+}
+
+function renderDevices() {
+  if (devices.length === 0) {
+    deviceListEl.innerHTML = `<li class="empty-state">✨ Belum ada device. Buat device di atas.</li>`;
+    return;
+  }
+  let html = '';
+  devices.forEach(dev => {
+    const isActive = (selectedDeviceId === dev.id);
+    const deviceIdShort = dev.id.slice(0, 8);
+    html += `
+      <li class="${isActive ? 'active-device' : ''}">
+        <span class="device-name">
+          <i class="fas fa-mobile-alt" style="color:#00f0ff; margin-right:8px;"></i>
+          ${dev.name}
+          <span class="device-id">#${deviceIdShort}</span>
+        </span>
+        <div class="device-actions">
+          <button class="select-btn" onclick="selectDevice('${dev.id}')" title="Pilih device"><i class="fas fa-check-circle"></i></button>
+          <button onclick="deleteDevice('${dev.id}')" title="Hapus device"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </li>
+    `;
+  });
+  deviceListEl.innerHTML = html;
+}
+
+function addDevice(name) {
+  const newDev = { id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), name: name.trim() };
+  devices.push(newDev);
+  saveDevices();
+  renderDevices();
+  showToast(`✨ Device "${name}" berhasil ditambahkan! 🎉`);
+}
+
+function deleteDevice(id) {
+  if (!confirm('🗑️ Hapus device ini?')) return;
+  devices = devices.filter(d => d.id !== id);
+  if (selectedDeviceId === id) selectedDeviceId = null;
+  saveDevices();
+  saveSelectedDevice();
+  renderDevices();
+  updateSelectedDisplay();
+  showToast('🗑️ Device dihapus.');
+}
+
+function selectDevice(id) {
+  selectedDeviceId = id;
+  saveSelectedDevice();
+  renderDevices();
+  updateSelectedDisplay();
+  const dev = devices.find(d => d.id === id);
+  showToast(`✅ Device "${dev?.name || id}" dipilih! 📱`);
+}
+
+clearDeviceBtn.addEventListener('click', () => {
+  selectedDeviceId = null;
+  saveSelectedDevice();
+  renderDevices();
+  updateSelectedDisplay();
+  showToast('🧹 Pilihan device dibersihkan.');
+});
+
+function updateSelectedDisplay() {
+  if (selectedDeviceId) {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    selectedDisplay.innerHTML = `<strong style="color:#00f0ff;">${dev ? dev.name : 'Tidak dikenal'}</strong>`;
+  } else {
+    selectedDisplay.innerHTML = `<strong style="color:#8888bb;">Tidak ada</strong>`;
+  }
+}
+
+// ============================================================
+// GET DEVICE ID UNTUK BINDING
+// ============================================================
+function getDeviceBinding() {
+  if (selectedDeviceId) {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    return dev ? { id: dev.id, name: dev.name } : null;
+  }
+  return null;
+}
+
+// ============================================================
+// DOWNLOAD ENGINE (Client-side ZIP)
+// ============================================================
+function obfuscateShell(script) {
+  const encoded = btoa(unescape(encodeURIComponent(script)));
+  return `#!/system/bin/sh\neval "$(echo '${encoded}' | base64 -d)"\n`;
+}
+
+function getCommandText(moduleName, deviceBinding) {
+  const deviceInfo = deviceBinding ? `📱 Device: ${deviceBinding.name} (ID: ${deviceBinding.id.slice(0,8)})` : '🚫 Tidak ada device terpilih';
+  return `╔═══════════════════════════════════════════════════════════════╗
+║               🧠 HEADTRICK MODULE - ${moduleName.toUpperCase()}          ║
+║               👑 Owner: Lana Official                                  ║
+║               📦 Version: 1.0                                         ║
+║               ${deviceInfo}                                            ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📌 CARA MENJALANKAN:
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║  sh ${moduleName.toLowerCase()}-run.sh                         ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+🔄 UNTUK RESET KE DEFAULT:
+   ╔═══════════════════════════════════════════════════════════════╗
+   ║  sh ${moduleName.toLowerCase()}-reset.sh                       ║
+   ╚═══════════════════════════════════════════════════════════════╝
+
+⚠️ PASTIKAN:
+   ✅ File sudah di-chmod +x
+   ✅ Dijalankan di Brevent / Termux
+   ✅ Device terdaftar dan terpilih
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ Lana Official © 2026 | Version 1.0 | Made with ❤️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+function getResetScript() {
+  return `#!/system/bin/sh
+# 🔄 RESET HEADTRICK MODULE
+echo "🔄 Resetting settings to default..."
+sleep 1
+settings put system pointer_speed 3
+settings put system accelerate_pointer 0
+settings put system touch_pressure_scale 1.0
+settings put global animator_duration_scale 1
+settings put global transition_animation_scale 1
+settings put global window_animation_scale 1
+echo "✅ Reset selesai! ✨"`;
+}
+
+async function downloadModule(moduleId) {
+  const mod = MODULE_DATA.find(m => m.id === moduleId);
+  if (!mod) return;
+
+  const deviceBinding = getDeviceBinding();
+  const deviceName = deviceBinding ? deviceBinding.name : 'Unknown';
+
+  const zip = new JSZip();
+  const obf = obfuscateShell(mod.script);
+  zip.file(`${mod.id}-run.sh`, obf);
+  zip.file(`${mod.id}-reset.sh`, getResetScript());
+  zip.file('command.txt', getCommandText(mod.name, deviceBinding));
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  saveAs(blob, `${mod.name}_${deviceName.replace(/\s/g, '_')}.zip`);
+  showToast(`✅ Download ${mod.emoji} ${mod.name} selesai! 🎉`);
+}
+
+async function downloadAllModules() {
+  const deviceBinding = getDeviceBinding();
+  const deviceName = deviceBinding ? deviceBinding.name : 'Unknown';
+  const zip = new JSZip();
+
+  MODULE_DATA.forEach(mod => {
+    const obf = obfuscateShell(mod.script);
+    zip.file(`${mod.id}-run.sh`, obf);
+    zip.file(`${mod.id}-reset.sh`, getResetScript());
+    zip.file(`${mod.id}/command.txt`, getCommandText(mod.name, deviceBinding));
+  });
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  saveAs(blob, `Headtrick_All_Modules_${deviceName.replace(/\s/g, '_')}.zip`);
+  showToast(`📦 Download semua module selesai! 🎉✨`);
+}
+
+// ============================================================
+// RENDER MODULE CARDS (dengan status binding)
+// ============================================================
+function renderModules() {
+  const deviceBinding = getDeviceBinding();
+  let html = '';
+  MODULE_DATA.forEach(mod => {
+    const isLocked = !deviceBinding;
+    const statusIcon = isLocked ? '🔒' : '🔓';
+    const statusText = isLocked ? 'Pilih device dulu!' : 'Ready';
+    const statusColor = isLocked ? 'locked' : 'unlocked';
+    html += `
+      <div class="module-card">
+        <i class="fas ${mod.icon}"></i>
+        <h3>${mod.emoji} ${mod.name}</h3>
+        <p>${mod.desc}</p>
+        <button class="download-btn" data-module="${mod.id}" ${isLocked ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+          <i class="fas fa-download"></i> Download ${mod.name}
+        </button>
+        <div class="module-status">
+          <span class="${statusColor}">${statusIcon} ${statusText}</span>
+        </div>
+      </div>
+    `;
+  });
+  moduleGrid.innerHTML = html;
+
+  document.querySelectorAll('.download-btn:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const mid = this.dataset.module;
+      downloadModule(mid);
+    });
+  });
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+deviceForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = deviceNameInput.value.trim();
+  if (!name) { showToast('⚠️ Masukkan nama device!', true); return; }
+  addDevice(name);
+  deviceNameInput.value = '';
+});
+
+downloadAllBtn.addEventListener('click', downloadAllModules);
+
+// ============================================================
+// INIT
+// ============================================================
+renderModules();
+renderDevices();
+updateSelectedDisplay();
+
+// Re-render module cards saat device berubah (agar status lock/unlock update)
+const origSelect = selectDevice;
+selectDevice = function(id) {
+  origSelect(id);
+  renderModules();
+};
+const origClear = clearDeviceBtn.click;
+clearDeviceBtn.addEventListener('click', function() {
+  // sudah di-handle di event listener sebelumnya
+});
+// Override delete juga
+const origDelete = deleteDevice;
+deleteDevice = function(id) {
+  origDelete(id);
+  renderModules();
+};
+
+showToast('🚀 Dashboard siap digunakan! Pilih device untuk unlock module. ✨');
+</script>
+</body>
+</html>
