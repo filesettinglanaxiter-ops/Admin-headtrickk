@@ -1,1165 +1,371 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🧠 Headtrick Admin</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: #0a0a1a;
-      color: #e0e0ff;
-      font-family: 'Segoe UI', 'Courier New', monospace;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1350px;
-      width: 100%;
-      background: linear-gradient(145deg, #0d0d2b, #1a1a3e);
-      padding: 30px;
-      border-radius: 28px;
-      border: 2px solid #00f0ff55;
-      box-shadow: 0 0 80px #00f0ff22, inset 0 0 40px #00f0ff11;
-    }
-    header {
-      text-align: center;
-      border-bottom: 2px solid #00f0ff33;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    header h1 {
-      font-size: 2.8rem;
-      background: linear-gradient(90deg, #00f0ff, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 4px;
-    }
-    header h1 i { -webkit-text-fill-color: initial; color: #00f0ff; }
-    header p { color: #8888cc; letter-spacing: 3px; font-size: 0.9rem; margin-top: 4px; }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 30px;
-    }
-    @media (max-width:900px) { .dashboard-grid { grid-template-columns:1fr; } }
-
-    .panel {
-      background: #0a0a1a88;
-      padding: 24px;
-      border-radius: 20px;
-      border-left: 4px solid #00f0ff;
-      backdrop-filter: blur(10px);
-    }
-    .panel h2 {
-      font-size: 1.3rem;
-      margin-bottom: 16px;
-      color: #ccccff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .panel h2 i { color: #00f0ff; }
-
-    #deviceForm {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    #deviceForm input {
-      flex: 1;
-      min-width: 180px;
-      background: #0a0a1a;
-      border: 1px solid #00f0ff44;
-      color: #e0e0ff;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 1rem;
-      outline: none;
-      transition: 0.3s;
-    }
-    #deviceForm input:focus { border-color: #00f0ff; box-shadow:0 0 20px #00f0ff22; }
-    #deviceForm button {
-      background: linear-gradient(135deg, #00f0ff, #0088cc);
-      color: #0a0a1a;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    #deviceForm button:hover { transform:scale(1.04); box-shadow:0 0 30px #00f0ff44; }
-
-    #deviceList {
-      list-style: none;
-      margin-top: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    #deviceList li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-      background: #0f0f2a;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      border: 1px solid #00f0ff22;
-      transition: 0.3s;
-    }
-    #deviceList li:hover { border-color:#00f0ff66; background:#14143a; }
-    #deviceList li .device-name { font-weight:500; color:#ccccff; }
-    #deviceList li .device-actions { display:flex; gap:10px; }
-    #deviceList li .device-actions button {
-      background:transparent; border:none; color:#ff4466; cursor:pointer; font-size:1.1rem; transition:0.3s;
-    }
-    #deviceList li .device-actions button:hover { color:#ff0044; transform:scale(1.2); }
-    #deviceList li .device-actions .select-btn { color:#00f0ff; }
-    #deviceList li .device-actions .select-btn:hover { color:#00ccff; }
-    #deviceList li.active-device {
-      border-color:#00f0ff; background:#0f1f3a; box-shadow:0 0 20px #00f0ff22;
-    }
-    #deviceList li .device-id {
-      font-size:0.7rem; color:#555588; margin-right:10px;
-    }
-    .empty-state { color:#6666aa; font-style:italic; padding:10px 0; }
-
-    .module-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .module-card {
-      background: #0f0f2a;
-      padding: 18px 14px;
-      border-radius: 16px;
-      text-align: center;
-      border: 1px solid #00f0ff22;
-      transition: 0.3s;
-      cursor: default;
-    }
-    .module-card:hover {
-      border-color: #00f0ff88;
-      transform: translateY(-4px);
-      box-shadow: 0 8px 30px #00f0ff11;
-    }
-    .module-card i { font-size:2.2rem; color:#00f0ff; margin-bottom:8px; display:block; }
-    .module-card h3 { font-size:1.1rem; color:#ccccff; margin-bottom:4px; }
-    .module-card p { font-size:0.8rem; color:#8888bb; margin-bottom:12px; }
-    .module-card .download-btn {
-      background: linear-gradient(135deg, #a855f7, #7c3aed);
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      width: 100%;
-      justify-content: center;
-    }
-    .module-card .download-btn:hover { transform:scale(1.05); box-shadow:0 0 30px #a855f744; }
-    .module-card .download-btn i { font-size:1rem; color:inherit; display:inline; }
-    .module-card .module-status {
-      font-size:0.7rem; margin-top:6px; color:#555588;
-    }
-    .module-card .module-status .locked { color:#ff4466; }
-    .module-card .module-status .unlocked { color:#00ff88; }
-
-    .download-all {
-      margin-top: 20px;
-      text-align: center;
-    }
-    .download-all button {
-      background: linear-gradient(135deg, #00f0ff, #0088cc);
-      color: #0a0a1a;
-      border: none;
-      padding: 14px 40px;
-      border-radius: 30px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .download-all button:hover { transform:scale(1.04); box-shadow:0 0 40px #00f0ff44; }
-
-    #toast {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background: #1a1a3e;
-      color: #00f0ff;
-      padding: 16px 24px;
-      border-radius: 16px;
-      border-left: 4px solid #00f0ff;
-      box-shadow: 0 0 40px #00f0ff22;
-      display: none;
-      font-weight: 500;
-      z-index: 999;
-      backdrop-filter: blur(10px);
-    }
-    #toast.show { display:block; animation:fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-
-    /* ===== LICENSE OVERLAY ===== */
-    #licenseOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(10,10,26,0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      backdrop-filter: blur(8px);
-    }
-    #licenseBox {
-      background: linear-gradient(145deg, #0d0d2b, #1a1a3e);
-      padding: 40px;
-      border-radius: 28px;
-      border: 2px solid #00f0ff55;
-      box-shadow: 0 0 80px #00f0ff22;
-      max-width: 450px;
-      width: 90%;
-      text-align: center;
-    }
-    #licenseBox h2 {
-      font-size: 2rem;
-      background: linear-gradient(90deg, #00f0ff, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-    }
-    #licenseBox p {
-      color: #8888cc;
-      margin-bottom: 20px;
-    }
-    #licenseBox input {
-      width: 100%;
-      padding: 14px 18px;
-      background: #0a0a1a;
-      border: 1px solid #00f0ff44;
-      color: #e0e0ff;
-      border-radius: 12px;
-      font-size: 1rem;
-      outline: none;
-      transition: 0.3s;
-      text-align: center;
-      letter-spacing: 2px;
-    }
-    #licenseBox input:focus { border-color:#00f0ff; box-shadow:0 0 30px #00f0ff22; }
-    #licenseBox button {
-      margin-top: 16px;
-      background: linear-gradient(135deg, #00f0ff, #0088cc);
-      color: #0a0a1a;
-      border: none;
-      padding: 14px 40px;
-      border-radius: 30px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.3s;
-      width: 100%;
-    }
-    #licenseBox button:hover { transform:scale(1.02); box-shadow:0 0 40px #00f0ff44; }
-    #licenseBox .error-msg {
-      color: #ff4466;
-      font-size: 0.85rem;
-      margin-top: 10px;
-      display: none;
-    }
-    #licenseBox .key-hint {
-      color: #555588;
-      font-size: 0.7rem;
-      margin-top: 8px;
-      font-style: italic;
-    }
-
-    ::-webkit-scrollbar { width:6px; }
-    ::-webkit-scrollbar-track { background:#0a0a1a; }
-    ::-webkit-scrollbar-thumb { background:#00f0ff44; border-radius:10px; }
-    ::-webkit-scrollbar-thumb:hover { background:#00f0ff88; }
-
-    @media (max-width:600px) {
-      .container { padding:16px; }
-      header h1 { font-size:2rem; }
-      .module-grid { grid-template-columns:1fr 1fr; }
-      #licenseBox { padding:24px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Headtrick Stars - Admin Dashboard v2.0</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons (No Emoji) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#080c14',
+                        cardbg: '#0c1220',
+                        accent: '#00a2ff',
+                        accenthover: '#0082d6'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="bg-darkbg text-slate-200 font-sans antialiased pb-20 md:pb-0">
 
-<!-- ===== LICENSE OVERLAY ===== -->
-<div id="licenseOverlay">
-  <div id="licenseBox">
-    <h2>🔑 KEY LISENSI</h2>
-    <p>Masukkan key untuk mengakses dashboard</p>
-    <input type="password" id="licenseKey" placeholder="Masukkan Key..." autofocus>
-    <button id="licenseBtn">✅ Verifikasi</button>
-    <div class="error-msg" id="licenseError">❌ Key salah! Coba lagi.</div>
-    <div class="key-hint">💡 Hubungi Owner: Lana Official</div>
-  </div>
-</div>
+    <!-- Wrapper / Layout Laravel Admin Style -->
+    <div class="flex h-screen overflow-hidden">
 
-<div class="container" id="mainContent" style="display:none;">
-  <header>
-    <h1><i class="fas fa-brain"></i> HEADTRICK ADMIN</h1>
-    <p>👑 Owner: Lana Official | Version 2.0 | <i class="fas fa-key" style="color:#00f0ff;"></i> Key: Headtrick123</p>
-  </header>
+        <!-- 1. NAVIGATION DRAWER (SIDEBAR) -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-cardbg/90 backdrop-blur-md border-r border-slate-800/80 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col">
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between px-6 h-16 border-b border-slate-800/80">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center text-accent border border-accent/30">
+                        <i class="fa-solid fa-star text-sm"></i>
+                    </div>
+                    <span class="font-bold tracking-wider text-white">HEADTRICK</span>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
 
-  <div class="dashboard-grid">
-    <!-- LEFT PANEL: DEVICE MANAGEMENT -->
-    <div class="panel">
-      <h2><i class="fas fa-plus-circle"></i> ✨ Create Device</h2>
-      <form id="deviceForm">
-        <input type="text" id="deviceName" placeholder="📱 Nama Device (contoh: Redmi Note 10)" required>
-        <button type="submit"><i class="fas fa-save"></i> Tambah</button>
-      </form>
+            <!-- Sidebar Navigation Links -->
+            <div class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Utama</p>
+                <a href="#" onclick="switchTab('generate')" class="nav-link flex items-center space-x-3 px-3 py-3 rounded-xl bg-accent/10 text-accent font-medium text-sm transition-all border border-accent/20" data-target="generate">
+                    <i class="fa-solid fa-key w-5 text-center"></i>
+                    <span>Generate Key</span>
+                </a>
+                <a href="#" onclick="switchTab('history')" class="nav-link flex items-center space-x-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white font-medium text-sm transition-all" data-target="history">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i>
+                    <span>History & Management</span>
+                </a>
+                <a href="#" onclick="switchTab('profile')" class="nav-link flex items-center space-x-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white font-medium text-sm transition-all" data-target="profile">
+                    <i class="fa-solid fa-circle-user w-5 text-center"></i>
+                    <span>Profile Owner</span>
+                </a>
+            </div>
 
-      <h2 style="margin-top:28px;"><i class="fas fa-list"></i> 📋 Devices</h2>
-      <ul id="deviceList"><li class="empty-state">✨ Belum ada device. Buat device di atas.</li></ul>
-      <p style="font-size:0.8rem; color:#555588; margin-top:10px;">
-        <i class="fas fa-info-circle"></i> Pilih device (icon <i class="fas fa-check-circle" style="color:#00f0ff;"></i>) untuk binding.
-      </p>
+            <!-- Sidebar Footer / Status -->
+            <div class="p-4 border-t border-slate-800/80">
+                <div class="bg-darkbg/60 p-3 rounded-xl border border-slate-800/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs text-slate-400">System v2.0 Online</span>
+                    </div>
+                    <i class="fa-solid fa-shield-halved text-accent text-xs"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col md:ml-64 overflow-hidden">
+            
+            <!-- Top Navbar -->
+            <header class="h-16 bg-cardbg/50 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-6 z-30">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white text-lg">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 id="page-title" class="text-sm font-bold tracking-wide uppercase text-slate-300">Generate Key Panel</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2 bg-darkbg/60 px-3 py-1.5 rounded-full border border-slate-800">
+                        <i class="fa-solid fa-user-shield text-accent text-xs"></i>
+                        <span class="text-xs font-semibold text-white">Lana Official</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Scroll Area -->
+            <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+                <!-- TAB 1: GENERATE -->
+                <section id="tab-generate" class="space-y-6">
+                    <!-- Dashboard Statistics Card Header Icons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-cardbg/80 border border-slate-800/80 p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium">Total Active Keys</p>
+                                <h3 class="text-xl font-bold text-white mt-1">1,284</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                                <i class="fa-solid fa-key"></i>
+                            </div>
+                        </div>
+                        <div class="bg-cardbg/80 border border-slate-800/80 p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium">Locked Devices</p>
+                                <h3 class="text-xl font-bold text-white mt-1">942</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            </div>
+                        </div>
+                        <div class="bg-cardbg/80 border border-slate-800/80 p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium">System Status</p>
+                                <h3 class="text-xl font-bold text-emerald-400 mt-1">Secure v2.0</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                                <i class="fa-solid fa-server"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generator Cards Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Card A: Generate Key Automatis -->
+                        <div class="bg-cardbg/80 border border-slate-800/80 p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center space-x-3 border-b border-slate-800/60 pb-3">
+                                <i class="fa-solid fa-wand-magic-sparkles text-accent"></i>
+                                <h2 class="font-bold text-white text-sm">Generate Key Otomatis</h2>
+                            </div>
+                            <div class="space-y-3 text-xs">
+                                <div class="flex items-center justify-between bg-darkbg/50 p-3 rounded-xl border border-slate-800/50">
+                                    <span class="text-slate-400">Konfigurasi Tipe:</span>
+                                    <span class="font-semibold text-accent">1 Device Only & Permanen</span>
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Prefix / Custom Tag</label>
+                                    <input type="text" value="STARS-AUTO-" class="w-full bg-darkbg border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-accent">
+                                </div>
+                                <button onclick="alert('Key Berhasil Digenerate Otomatis!')" class="w-full bg-accent hover:bg-accenthover text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-accent/20 flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>Generate Otomatis Sekarang</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card B: Key Manual Add Device -->
+                        <div class="bg-cardbg/80 border border-slate-800/80 p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center space-x-3 border-b border-slate-800/60 pb-3">
+                                <i class="fa-solid fa-pen-to-square text-accent"></i>
+                                <h2 class="font-bold text-white text-sm">Manual Add Device & Key</h2>
+                            </div>
+                            <div class="space-y-3 text-xs">
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Nama Key / Pemilik</label>
+                                    <input type="text" placeholder="Contoh: MemberVIP-Lana" class="w-full bg-darkbg border border-slate-800 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-accent">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-slate-400 mb-1">Durasi</label>
+                                        <select class="w-full bg-darkbg border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-accent">
+                                            <option>Permanen</option>
+                                            <option>30 Hari</option>
+                                            <option>7 Hari</option>
+                                            <option>1 Hari</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-slate-400 mb-1">Batas Device</label>
+                                        <input type="text" value="1 Device" readonly class="w-full bg-darkbg/50 border border-slate-800/50 rounded-xl px-3 py-2 text-slate-400 cursor-not-allowed">
+                                    </div>
+                                </div>
+                                <button onclick="alert('Key Manual Berhasil Ditambahkan!')" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 rounded-xl transition-all border border-slate-700 flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-circle-plus"></i>
+                                    <span>Simpan & Tambahkan Key</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- TAB 2: HISTORY & MANAGEMENT (WITH FREEZE KEY) -->
+                <section id="tab-history" class="space-y-6 hidden">
+                    <div class="bg-cardbg/80 border border-slate-800/80 p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800/60 pb-3">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-table-list text-accent"></i>
+                                <h2 class="font-bold text-white text-sm">Database & Freeze Management</h2>
+                            </div>
+                            <span class="text-xs bg-darkbg px-3 py-1 rounded-full border border-slate-800 text-slate-400">Total: 3 Active</span>
+                        </div>
+
+                        <!-- Responsive Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-slate-500 uppercase bg-darkbg/40 border-b border-slate-800">
+                                    <tr>
+                                        <th class="px-4 py-3">Nama Key</th>
+                                        <th class="px-4 py-3">HWID Device</th>
+                                        <th class="px-4 py-3">Durasi</th>
+                                        <th class="px-4 py-3">Status</th>
+                                        <th class="px-4 py-3 text-center">Aksi (Freeze/Delete)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60">
+                                    <tr class="hover:bg-slate-800/20">
+                                        <td class="px-4 py-3 font-medium text-white">STARS-LANA-01</td>
+                                        <td class="px-4 py-3 text-slate-400 font-mono">AB94-XX92-1102</td>
+                                        <td class="px-4 py-3 text-accent">Permanen</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">Active</span></td>
+                                        <td class="px-4 py-3 text-center space-x-2">
+                                            <button onclick="toggleFreeze(this)" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg border border-amber-500/20 transition-all">
+                                                <i class="fa-solid fa-snowflake mr-1"></i> Freeze
+                                            </button>
+                                            <button onclick="this.closest('tr').remove()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/20 transition-all">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-800/20">
+                                        <td class="px-4 py-3 font-medium text-white">STARS-VIP-02</td>
+                                        <td class="px-4 py-3 text-slate-400 font-mono">CD88-FF33-9981</td>
+                                        <td class="px-4 py-3 text-accent">30 Hari</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">Active</span></td>
+                                        <td class="px-4 py-3 text-center space-x-2">
+                                            <button onclick="toggleFreeze(this)" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg border border-amber-500/20 transition-all">
+                                                <i class="fa-solid fa-snowflake mr-1"></i> Freeze
+                                            </button>
+                                            <button onclick="this.closest('tr').remove()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/20 transition-all">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: PROFILE OWNER -->
+                <section id="tab-profile" class="space-y-6 hidden">
+                    <div class="bg-cardbg/80 border border-slate-800/80 p-6 rounded-2xl max-w-xl mx-auto space-y-6">
+                        <div class="flex items-center space-x-4 border-b border-slate-800/60 pb-4">
+                            <div class="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center text-accent border border-accent/30 text-2xl">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-white">Lana Official</h2>
+                                <p class="text-xs text-slate-400">Lead System Architect & Developer</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between bg-darkbg/50 p-3 rounded-xl border border-slate-800/50">
+                                <span class="text-slate-400"><i class="fa-solid fa-tag mr-2 text-accent"></i> Nama Script / Module</span>
+                                <span class="font-semibold text-white">Headtrick Stars</span>
+                            </div>
+                            <div class="flex justify-between bg-darkbg/50 p-3 rounded-xl border border-slate-800/50">
+                                <span class="text-slate-400"><i class="fa-solid fa-code-branch mr-2 text-accent"></i> Version</span>
+                                <span class="font-semibold text-accent">v2.0</span>
+                            </div>
+                            <div class="flex justify-between bg-darkbg/50 p-3 rounded-xl border border-slate-800/50">
+                                <span class="text-slate-400"><i class="fa-solid fa-shield-halved mr-2 text-accent"></i> Framework Style</span>
+                                <span class="font-semibold text-white">Laravel Modern Portfolio</span>
+                            </div>
+                            <div class="flex justify-between bg-darkbg/50 p-3 rounded-xl border border-slate-800/50">
+                                <span class="text-slate-400"><i class="fa-solid fa-microchip mr-2 text-accent"></i> Security & License Engine</span>
+                                <span class="font-semibold text-emerald-400">Active & Enforced</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+        <!-- BOTTOM NAVIGATION (MOBILE VIEWPORT) -->
+        <nav class="md:hidden fixed bottom-0 inset-x-0 bg-cardbg/95 backdrop-blur-md border-t border-slate-800 flex justify-around items-center h-16 z-50 px-2">
+            <button onclick="switchTab('generate')" class="bottom-nav-btn flex flex-col items-center justify-center flex-1 text-accent space-y-1" data-target="generate">
+                <i class="fa-solid fa-key text-sm"></i>
+                <span class="text-[10px] font-medium">Generate</span>
+            </button>
+            <button onclick="switchTab('history')" class="bottom-nav-btn flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-white space-y-1" data-target="history">
+                <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                <span class="text-[10px] font-medium">History</span>
+            </button>
+            <button onclick="switchTab('profile')" class="bottom-nav-btn flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-white space-y-1" data-target="profile">
+                <i class="fa-solid fa-circle-user text-sm"></i>
+                <span class="text-[10px] font-medium">Profile</span>
+            </button>
+        </nav>
+
     </div>
 
-    <!-- RIGHT PANEL: MODULES -->
-    <div class="panel">
-      <h2><i class="fas fa-download"></i> 📥 Download Modules</h2>
-      <p style="color:#8888bb; margin-bottom:8px;">
-        <i class="fas fa-flag"></i> Device terpilih: <span id="selectedDeviceDisplay"><strong style="color:#8888bb;">Tidak ada</strong></span>
-        <button id="clearDeviceBtn" style="background:transparent; border:none; color:#ff4466; cursor:pointer; margin-left:10px; font-size:0.8rem;">
-          <i class="fas fa-times-circle"></i> Hapus
-        </button>
-      </p>
-      <div class="module-grid" id="moduleGrid"></div>
-      <div class="download-all">
-        <button id="downloadAllBtn"><i class="fas fa-download"></i> 📦 Download All Modules</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<script>
-// ============================================================
-// LICENSE
-// ============================================================
-const LICENSE_KEY = "Headtrick123";
-
-document.getElementById('licenseBtn').addEventListener('click', function() {
-  const input = document.getElementById('licenseKey').value.trim();
-  const errorEl = document.getElementById('licenseError');
-  if (input === LICENSE_KEY) {
-    document.getElementById('licenseOverlay').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'block';
-    showToast('✅ Key valid! Selamat datang di Headtrick Admin! 🎉');
-  } else {
-    errorEl.style.display = 'block';
-    setTimeout(() => errorEl.style.display = 'none', 3000);
-  }
-});
-
-document.getElementById('licenseKey').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('licenseBtn').click();
-});
-
-// ============================================================
-// MODULE DATA (lengkap dengan Device Binding)
-// ============================================================
-const MODULE_DATA = [
-  {
-    id: 'basicx',
-    name: 'BasicX',
-    icon: 'fa-bolt',
-    desc: '⚡ Aim Assist • Optimizer • Drag Headshot Brutall',
-    emoji: '⚡',
-    script: `#!/system/bin/sh
-#============================================================
-# MODULE : Headtrick BasicX
-# OWNER  : Lana Official
-# VERSION: 1.0
-# TYPE   : Brevent Module
-# SUPPORT: FreeFire & FreeFire MAX
-# FEATURES: Aim Assist, Optimizer Sensitivity, Aim Tracking,
-#           Drag Headshot Brutall, Performance Boost Device,
-#           Easy Drag, Lock Target FreeFire/MAX
-#============================================================
-
-clear
-echo ""
-echo "          ██╗  ██╗███████╗ █████╗ ██████╗ ████████╗██████╗ ██╗ ██████╗██╗  ██╗"
-echo "          ██║  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██║ ██╔╝"
-echo "          ███████║█████╗  ███████║██║  ██║   ██║   ██████╔╝██║██║     █████╔╝ "
-echo "          ██╔══██║██╔══╝  ██╔══██║██║  ██║   ██║   ██╔══██╗██║██║     ██╔═██╗ "
-echo "          ██║  ██║███████╗██║  ██║██████╔╝   ██║   ██║  ██║██║╚██████╗██║  ██╗"
-echo "          ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝"
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-
-echo "============================================================"
-echo "  STATUS  : MODULE ACTIVE"
-echo "  VERSION : 1.0"
-echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
-echo "  OWNER   : Lana Official"
-echo "  SUPPORT : FreeFire & FreeFire MAX"
-echo "============================================================"
-echo ""
-
-echo "DEVICE INFORMATION :"
-echo "------------------------------------------------------------"
-echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
-echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
-echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
-echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
-echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
-echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
-echo "------------------------------------------------------------"
-echo ""
-
-echo "LOADING HEADTRICK BASICX..."
-sleep 1
-echo "  [■□□□□□□□□□] 10% - Initializing Engine..."
-sleep 1
-echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
-sleep 1
-echo "  [■■■□□□□□□□] 30% - Optimizer Sensitivity..."
-sleep 1
-echo "  [■■■■□□□□□□] 40% - Aim Tracking System..."
-sleep 1
-echo "  [■■■■■□□□□□] 50% - Drag Headshot Brutall..."
-sleep 1
-echo "  [■■■■■■□□□□] 60% - Performance Boost Device..."
-sleep 1
-echo "  [■■■■■■■□□□] 70% - Easy Drag Calibration..."
-sleep 1
-echo "  [■■■■■■■■□□] 80% - Lock Target Setup..."
-sleep 1
-echo "  [■■■■■■■■■□] 90% - Syncing All Features..."
-sleep 1
-echo "  [■■■■■■■■■■] 100% - HEADTRICK BASICX ACTIVE!"
-sleep 1
-echo ""
-
-echo "APPLYING HEADTRICK BASICX SETTINGS..."
-sleep 1
-
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put system touch_pressure_scale 2.0
-settings put system touch_size_scale 2.5
-settings put system screen_brightness 255
-settings put system screen_brightness_mode 0
-settings put global power_saver 0
-settings put global stay_on_while_plugged_in 1
-settings put system haptic_feedback_enabled 0
-settings put system sound_effects_enabled 0
-settings put system auto_rotate_0 0
-settings put system auto_rotate_90 0
-settings put system auto_rotate_180 0
-settings put system auto_rotate_270 0
-settings put system pointer_location 0
-settings put system show_touches 0
-settings put secure long_press_timeout 100
-settings put global animator_duration_scale 0.3
-settings put global transition_animation_scale 0.3
-settings put global window_animation_scale 0.3
-settings put global wifi_scan_always_enabled 0
-settings put global ble_scan_always_enabled 0
-settings put global activity_starts_logging_enabled 0
-settings put global force_audio_effects 1
-settings put system font_scale 0.85
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put secure accessibility_display_magnification_enabled 0
-settings put system auto_rotate_0 0
-settings put system auto_rotate_90 0
-settings put system auto_rotate_180 0
-settings put system auto_rotate_270 0
-
-echo ""
-echo "============================================================"
-echo "  ✅ ALL FEATURES APPLIED SUCCESSFULLY"
-echo "  ✅ HEADTRICK BASICX v1.0 READY"
-echo "  ✅ SUPPORT FREEFIRE & FREEFIRE MAX"
-echo "============================================================"
-echo ""
-echo "============================================================"
-echo "  HEADTRICK BASICX v1.0 - Lana Official"
-echo "  Module Brevent telah aktif. Nikmati performa maksimal!"
-echo "============================================================"`
-  },
-  {
-    id: 'clofid',
-    name: 'Clofid',
-    icon: 'fa-bullseye',
-    desc: '🎯 Headshot Sync • Hyper Drag Stabilizer',
-    emoji: '🎯',
-    script: `#!/system/bin/sh
-#============================================================
-# MODULE : Headtrick Clofid
-# OWNER  : Lana Official
-# VERSION: 1.0
-# TYPE   : Non-Root Module
-# SUPPORT: FreeFire & FreeFire MAX
-# FEATURES: Headshot Sync Core, Aim Assist, Hyper Drag Stabilizer,
-#           Axis Tock System, Battery Server Engine, Touch Core X,
-#           Frame Boost Engine, Easy Headshot, Sensitivity XYZ
-#============================================================
-
-clear
-echo ""
-echo "          ██╗  ██╗███████╗ █████╗ ██████╗ ████████╗██████╗ ██╗ ██████╗██╗  ██╗"
-echo "          ██║  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██║ ██╔╝"
-echo "          ███████║█████╗  ███████║██║  ██║   ██║   ██████╔╝██║██║     █████╔╝ "
-echo "          ██╔══██║██╔══╝  ██╔══██║██║  ██║   ██║   ██╔══██╗██║██║     ██╔═██╗ "
-echo "          ██║  ██║███████╗██║  ██║██████╔╝   ██║   ██║  ██║██║╚██████╗██║  ██╗"
-echo "          ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝"
-echo ""
-echo "                     ██████╗██╗      ██████╗ ███████╗██╗██████╗ "
-echo "                    ██╔════╝██║     ██╔═══██╗██╔════╝██║██╔══██╗"
-echo "                    ██║     ██║     ██║   ██║█████╗  ██║██║  ██║"
-echo "                    ██║     ██║     ██║   ██║██╔══╝  ██║██║  ██║"
-echo "                    ╚██████╗███████╗╚██████╔╝██║     ██║██████╔╝"
-echo "                     ╚═════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚═════╝ "
-echo ""
-echo ""
-
-echo "============================================================"
-echo "  STATUS  : MODULE ACTIVE"
-echo "  VERSION : 1.0"
-echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
-echo "  OWNER   : Lana Official"
-echo "============================================================"
-echo ""
-
-echo "DEVICE INFORMATION :"
-echo "------------------------------------------------------------"
-echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
-echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
-echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
-echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
-echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
-echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
-echo "------------------------------------------------------------"
-echo ""
-
-echo "LOADING HEADTRICK CLOFID..."
-sleep 1
-echo "  [■□□□□□□□□□] 10% - Headshot Sync Core..."
-sleep 1
-echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
-sleep 1
-echo "  [■■■□□□□□□□] 30% - Hyper Drag Stabilizer..."
-sleep 1
-echo "  [■■■■□□□□□□] 40% - Axis Tock System..."
-sleep 1
-echo "  [■■■■■□□□□□] 50% - Battery Server Engine..."
-sleep 1
-echo "  [■■■■■■□□□□] 60% - Touch Core X..."
-sleep 1
-echo "  [■■■■■■■□□□] 70% - Frame Boost Engine..."
-sleep 1
-echo "  [■■■■■■■■□□] 80% - Easy Headshot..."
-sleep 1
-echo "  [■■■■■■■■■□] 90% - Sensitivity XYZ..."
-sleep 1
-echo "  [■■■■■■■■■■] 100% - HEADTRICK CLOFID ACTIVE!"
-sleep 1
-echo ""
-
-echo "APPLYING HEADTRICK CLOFID SETTINGS..."
-sleep 1
-
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put system touch_pressure_scale 2.0
-settings put system touch_size_scale 2.5
-settings put system auto_rotate_0 0
-settings put system auto_rotate_90 0
-settings put system auto_rotate_180 0
-settings put system auto_rotate_270 0
-settings put system pointer_location 0
-settings put system show_touches 0
-settings put global power_saver 0
-settings put global stay_on_while_plugged_in 1
-settings put system screen_brightness 255
-settings put system screen_brightness_mode 0
-settings put global animator_duration_scale 0.3
-settings put global transition_animation_scale 0.3
-settings put global window_animation_scale 0.3
-settings put system haptic_feedback_enabled 0
-settings put system sound_effects_enabled 0
-settings put secure long_press_timeout 100
-settings put system font_scale 0.85
-settings put global wifi_scan_always_enabled 0
-settings put global ble_scan_always_enabled 0
-settings put global force_audio_effects 1
-
-echo ""
-echo "============================================================"
-echo "  ✅ ALL FEATURES APPLIED SUCCESSFULLY"
-echo "  ✅ HEADTRICK CLOFID v1.0 READY"
-echo "============================================================"
-echo ""
-echo "============================================================"
-echo "  HEADTRICK CLOFID v1.0 - Lana Official"
-echo "  Module Headtrick telah aktif. Nikmati performa maksimal!"
-echo "============================================================"`
-  },
-  {
-    id: 'fluxo',
-    name: 'Fluxo',
-    icon: 'fa-fire',
-    desc: '🔥 Extra Smooth • GPU Hyper Render • Mouse Inject',
-    emoji: '🔥',
-    script: `#!/system/bin/sh
-#============================================================
-# MODULE : Headtrick Fluxo
-# OWNER  : Lana Official
-# VERSION: 1.0
-# TYPE   : Non-Root Module
-# SUPPORT: FreeFire & FreeFire MAX
-# FEATURES: Headshot Sync Core, Aim Assist, Hyper Drag Stabilizer,
-#           Axis Tock System, Battery Server Engine, Touch Core X,
-#           Frame Boost Engine, Easy Headshot, Sensitivity XYZ,
-#           Extra Smooth Engine, GPU Hyper Render, Mouse Inject Speed
-#============================================================
-
-clear
-echo ""
-echo "          ██╗  ██╗███████╗ █████╗ ██████╗ ████████╗██████╗ ██╗ ██████╗██╗  ██╗"
-echo "          ██║  ██║██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██║██╔════╝██║ ██╔╝"
-echo "          ███████║█████╗  ███████║██║  ██║   ██║   ██████╔╝██║██║     █████╔╝ "
-echo "          ██╔══██║██╔══╝  ██╔══██║██║  ██║   ██║   ██╔══██╗██║██║     ██╔═██╗ "
-echo "          ██║  ██║███████╗██║  ██║██████╔╝   ██║   ██║  ██║██║╚██████╗██║  ██╗"
-echo "          ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝"
-echo ""
-echo "          ███████╗██╗     ██╗   ██╗██╗  ██╗ ██████╗ "
-echo "          ██╔════╝██║     ██║   ██║██║  ██║██╔═══██╗"
-echo "          █████╗  ██║     ██║   ██║███████║██║   ██║"
-echo "          ██╔══╝  ██║     ██║   ██║██╔══██║██║   ██║"
-echo "          ██║     ███████╗╚██████╔╝██║  ██║╚██████╔╝"
-echo "          ╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ "
-echo ""
-echo ""
-
-echo "============================================================"
-echo "  STATUS  : MODULE ACTIVE"
-echo "  VERSION : 1.0"
-echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
-echo "  OWNER   : Lana Official"
-echo "============================================================"
-echo ""
-
-echo "DEVICE INFORMATION :"
-echo "------------------------------------------------------------"
-echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
-echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
-echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
-echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
-echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
-echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
-echo "------------------------------------------------------------"
-echo ""
-
-echo "LOADING HEADTRICK FLUXO..."
-sleep 1
-echo "  [■□□□□□□□□□] 10% - Headshot Sync Core..."
-sleep 1
-echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
-sleep 1
-echo "  [■■■□□□□□□□] 30% - Hyper Drag Stabilizer..."
-sleep 1
-echo "  [■■■■□□□□□□] 40% - Axis Tock System..."
-sleep 1
-echo "  [■■■■■□□□□□] 50% - Battery Server Engine..."
-sleep 1
-echo "  [■■■■■■□□□□] 60% - Touch Core X..."
-sleep 1
-echo "  [■■■■■■■□□□] 70% - Frame Boost Engine..."
-sleep 1
-echo "  [■■■■■■■■□□] 80% - Easy Headshot & Sensitivity XYZ..."
-sleep 1
-echo "  [■■■■■■■■■□] 90% - Extra Smooth Engine & GPU Render..."
-sleep 1
-echo "  [■■■■■■■■■■] 100% - HEADTRICK FLUXO ACTIVE!"
-sleep 1
-echo ""
-
-echo "APPLYING HEADTRICK FLUXO SETTINGS..."
-sleep 1
-
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put system touch_pressure_scale 2.0
-settings put system touch_size_scale 2.5
-settings put system auto_rotate_0 0
-settings put system auto_rotate_90 0
-settings put system auto_rotate_180 0
-settings put system auto_rotate_270 0
-settings put system pointer_location 0
-settings put system show_touches 0
-settings put global power_saver 0
-settings put global stay_on_while_plugged_in 1
-settings put system screen_brightness 255
-settings put system screen_brightness_mode 0
-settings put global animator_duration_scale 0.3
-settings put global transition_animation_scale 0.3
-settings put global window_animation_scale 0.3
-settings put system haptic_feedback_enabled 0
-settings put system sound_effects_enabled 0
-settings put secure long_press_timeout 100
-settings put system font_scale 0.85
-settings put global wifi_scan_always_enabled 0
-settings put global ble_scan_always_enabled 0
-settings put global activity_starts_logging_enabled 0
-settings put global force_audio_effects 1
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put secure accessibility_display_magnification_enabled 0
-
-echo ""
-echo "============================================================"
-echo "  ✓ ALL FEATURES APPLIED SUCCESSFULLY"
-echo "  ✓ HEADTRICK FLUXO v1.0 READY"
-echo "============================================================"
-echo ""
-echo "============================================================"
-echo "  HEADTRICK FLUXO v1.0 - Lana Official"
-echo "  Fluxo telah aktif. Nikmati performa maksimal!"
-echo "============================================================"`
-  },
-  {
-    id: 'stars',
-    name: 'Stars',
-    icon: 'fa-star',
-    desc: '⭐ All-in-One Ultimate Performance',
-    emoji: '⭐',
-    script: `#!/system/bin/sh
-#============================================================
-# MODULE : STARS
-# OWNER  : Lana Official
-# VERSION: 1.0
-# TYPE   : Non-Root Module
-# SUPPORT: FreeFire & FreeFire MAX
-# FEATURES: Headshot Sync Core, Aim Assist, Hyper Drag Stabilizer,
-#           Axis Tock System, Battery Server Engine, Touch Core X,
-#           Frame Boost Engine, Easy Headshot, Sensitivity XYZ,
-#           Extra Smooth Engine, GPU Hyper Render, Mouse Inject Speed
-#============================================================
-
-clear
-echo ""
-echo "          ███████╗████████╗ █████╗ ██████╗ ███████╗"
-echo "          ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝"
-echo "          ███████╗   ██║   ███████║██████╔╝███████╗"
-echo "          ╚════██║   ██║   ██╔══██║██╔══██╗╚════██║"
-echo "          ███████║   ██║   ██║  ██║██║  ██║███████║"
-echo "          ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝"
-echo ""
-echo ""
-
-echo "============================================================"
-echo "  STATUS  : MODULE ACTIVE"
-echo "  VERSION : 1.0"
-echo "  DATE    : $(date +"%d-%m-%Y %H:%M:%S")"
-echo "  OWNER   : Lana Official"
-echo "============================================================"
-echo ""
-
-echo "DEVICE INFORMATION :"
-echo "------------------------------------------------------------"
-echo "  Model    : $(getprop ro.product.model 2>/dev/null || echo "Unknown")"
-echo "  Android  : $(getprop ro.build.version.release 2>/dev/null || echo "Unknown")"
-echo "  SDK      : $(getprop ro.build.version.sdk 2>/dev/null || echo "Unknown")"
-echo "  CPU      : $(getprop ro.product.board 2>/dev/null || echo "Unknown")"
-echo "  RAM      : $(free -m 2>/dev/null | awk '/Mem:/ {print $2}' || echo "Unknown") MB"
-echo "  Storage  : $(df -h /data 2>/dev/null | awk 'NR==2 {print $2}' || echo "Unknown")"
-echo "------------------------------------------------------------"
-echo ""
-
-echo "LOADING STARS MODULE..."
-sleep 1
-echo "  [■□□□□□□□□□] 10% - Headshot Sync Core..."
-sleep 1
-echo "  [■■□□□□□□□□] 20% - Aim Assist Module..."
-sleep 1
-echo "  [■■■□□□□□□□] 30% - Hyper Drag Stabilizer..."
-sleep 1
-echo "  [■■■■□□□□□□] 40% - Axis Tock System..."
-sleep 1
-echo "  [■■■■■□□□□□] 50% - Battery Server Engine..."
-sleep 1
-echo "  [■■■■■■□□□□] 60% - Touch Core X..."
-sleep 1
-echo "  [■■■■■■■□□□] 70% - Frame Boost Engine..."
-sleep 1
-echo "  [■■■■■■■■□□] 80% - Easy Headshot & Sensitivity XYZ..."
-sleep 1
-echo "  [■■■■■■■■■□] 90% - Extra Smooth Engine & GPU Render..."
-sleep 1
-echo "  [■■■■■■■■■■] 100% - STARS ACTIVE!"
-sleep 1
-echo ""
-
-echo "APPLYING STARS SETTINGS..."
-sleep 1
-
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put system touch_pressure_scale 2.0
-settings put system touch_size_scale 2.5
-settings put system auto_rotate_0 0
-settings put system auto_rotate_90 0
-settings put system auto_rotate_180 0
-settings put system auto_rotate_270 0
-settings put system pointer_location 0
-settings put system show_touches 0
-settings put global power_saver 0
-settings put global stay_on_while_plugged_in 1
-settings put system screen_brightness 255
-settings put system screen_brightness_mode 0
-settings put global animator_duration_scale 0.3
-settings put global transition_animation_scale 0.3
-settings put global window_animation_scale 0.3
-settings put system haptic_feedback_enabled 0
-settings put system sound_effects_enabled 0
-settings put secure long_press_timeout 100
-settings put system font_scale 0.85
-settings put global wifi_scan_always_enabled 0
-settings put global ble_scan_always_enabled 0
-settings put global activity_starts_logging_enabled 0
-settings put global force_audio_effects 1
-settings put system pointer_speed 7
-settings put system accelerate_pointer 1
-settings put secure accessibility_display_magnification_enabled 0
-
-echo ""
-echo "============================================================"
-echo "  ✅ ALL FEATURES APPLIED SUCCESSFULLY"
-echo "  ✅ STARS v1.0 READY"
-echo "  ✅ SUPPORT FREEFIRE & FREEFIRE MAX"
-echo "============================================================"
-echo ""
-echo "============================================================"
-echo "  STARS v1.0 - Lana Official"
-echo "  STARS telah aktif. Nikmati performa maksimal!"
-echo "============================================================"`
-  }
-];
-
-// ============================================================
-// STATE
-// ============================================================
-let devices = JSON.parse(localStorage.getItem('headtrick_devices')) || [];
-let selectedDeviceId = localStorage.getItem('headtrick_selected_device') || null;
-
-// ============================================================
-// DOM REFS
-// ============================================================
-const deviceListEl = document.getElementById('deviceList');
-const deviceForm = document.getElementById('deviceForm');
-const deviceNameInput = document.getElementById('deviceName');
-const moduleGrid = document.getElementById('moduleGrid');
-const selectedDisplay = document.getElementById('selectedDeviceDisplay');
-const clearDeviceBtn = document.getElementById('clearDeviceBtn');
-const downloadAllBtn = document.getElementById('downloadAllBtn');
-const toast = document.getElementById('toast');
-
-// ============================================================
-// TOAST
-// ============================================================
-function showToast(msg, isError = false) {
-  toast.textContent = msg;
-  toast.style.color = isError ? '#ff4466' : '#00f0ff';
-  toast.style.borderLeftColor = isError ? '#ff4466' : '#00f0ff';
-  toast.classList.add('show');
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
-}
-
-// ============================================================
-// DEVICE FUNCTIONS
-// ============================================================
-function saveDevices() {
-  localStorage.setItem('headtrick_devices', JSON.stringify(devices));
-}
-
-function saveSelectedDevice() {
-  if (selectedDeviceId) localStorage.setItem('headtrick_selected_device', selectedDeviceId);
-  else localStorage.removeItem('headtrick_selected_device');
-}
-
-function renderDevices() {
-  if (devices.length === 0) {
-    deviceListEl.innerHTML = `<li class="empty-state">✨ Belum ada device. Buat device di atas.</li>`;
-    return;
-  }
-  let html = '';
-  devices.forEach(dev => {
-    const isActive = (selectedDeviceId === dev.id);
-    const deviceIdShort = dev.id.slice(0, 8);
-    html += `
-      <li class="${isActive ? 'active-device' : ''}">
-        <span class="device-name">
-          <i class="fas fa-mobile-alt" style="color:#00f0ff; margin-right:8px;"></i>
-          ${dev.name}
-          <span class="device-id">#${deviceIdShort}</span>
-        </span>
-        <div class="device-actions">
-          <button class="select-btn" onclick="selectDevice('${dev.id}')" title="Pilih device"><i class="fas fa-check-circle"></i></button>
-          <button onclick="deleteDevice('${dev.id}')" title="Hapus device"><i class="fas fa-trash-alt"></i></button>
-        </div>
-      </li>
-    `;
-  });
-  deviceListEl.innerHTML = html;
-}
-
-function addDevice(name) {
-  const newDev = { id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), name: name.trim() };
-  devices.push(newDev);
-  saveDevices();
-  renderDevices();
-  showToast(`✨ Device "${name}" berhasil ditambahkan! 🎉`);
-}
-
-function deleteDevice(id) {
-  if (!confirm('🗑️ Hapus device ini?')) return;
-  devices = devices.filter(d => d.id !== id);
-  if (selectedDeviceId === id) selectedDeviceId = null;
-  saveDevices();
-  saveSelectedDevice();
-  renderDevices();
-  updateSelectedDisplay();
-  showToast('🗑️ Device dihapus.');
-}
-
-function selectDevice(id) {
-  selectedDeviceId = id;
-  saveSelectedDevice();
-  renderDevices();
-  updateSelectedDisplay();
-  const dev = devices.find(d => d.id === id);
-  showToast(`✅ Device "${dev?.name || id}" dipilih! 📱`);
-}
-
-clearDeviceBtn.addEventListener('click', () => {
-  selectedDeviceId = null;
-  saveSelectedDevice();
-  renderDevices();
-  updateSelectedDisplay();
-  showToast('🧹 Pilihan device dibersihkan.');
-});
-
-function updateSelectedDisplay() {
-  if (selectedDeviceId) {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    selectedDisplay.innerHTML = `<strong style="color:#00f0ff;">${dev ? dev.name : 'Tidak dikenal'}</strong>`;
-  } else {
-    selectedDisplay.innerHTML = `<strong style="color:#8888bb;">Tidak ada</strong>`;
-  }
-}
-
-// ============================================================
-// GET DEVICE ID UNTUK BINDING
-// ============================================================
-function getDeviceBinding() {
-  if (selectedDeviceId) {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    return dev ? { id: dev.id, name: dev.name } : null;
-  }
-  return null;
-}
-
-// ============================================================
-// DOWNLOAD ENGINE (Client-side ZIP)
-// ============================================================
-function obfuscateShell(script) {
-  const encoded = btoa(unescape(encodeURIComponent(script)));
-  return `#!/system/bin/sh\neval "$(echo '${encoded}' | base64 -d)"\n`;
-}
-
-function getCommandText(moduleName, deviceBinding) {
-  const deviceInfo = deviceBinding ? `📱 Device: ${deviceBinding.name} (ID: ${deviceBinding.id.slice(0,8)})` : '🚫 Tidak ada device terpilih';
-  return `╔═══════════════════════════════════════════════════════════════╗
-║               🧠 HEADTRICK MODULE - ${moduleName.toUpperCase()}          ║
-║               👑 Owner: Lana Official                                  ║
-║               📦 Version: 1.0                                         ║
-║               ${deviceInfo}                                            ║
-╚═══════════════════════════════════════════════════════════════╝
-
-📌 CARA MENJALANKAN:
-   ╔═══════════════════════════════════════════════════════════════╗
-   ║  sh ${moduleName.toLowerCase()}-run.sh                         ║
-   ╚═══════════════════════════════════════════════════════════════╝
-
-🔄 UNTUK RESET KE DEFAULT:
-   ╔═══════════════════════════════════════════════════════════════╗
-   ║  sh ${moduleName.toLowerCase()}-reset.sh                       ║
-   ╚═══════════════════════════════════════════════════════════════╝
-
-⚠️ PASTIKAN:
-   ✅ File sudah di-chmod +x
-   ✅ Dijalankan di Brevent / Termux
-   ✅ Device terdaftar dan terpilih
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✨ Lana Official © 2026 | Version 1.0 | Made with ❤️
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-}
-
-function getResetScript() {
-  return `#!/system/bin/sh
-# 🔄 RESET HEADTRICK MODULE
-echo "🔄 Resetting settings to default..."
-sleep 1
-settings put system pointer_speed 3
-settings put system accelerate_pointer 0
-settings put system touch_pressure_scale 1.0
-settings put global animator_duration_scale 1
-settings put global transition_animation_scale 1
-settings put global window_animation_scale 1
-echo "✅ Reset selesai! ✨"`;
-}
-
-async function downloadModule(moduleId) {
-  const mod = MODULE_DATA.find(m => m.id === moduleId);
-  if (!mod) return;
-
-  const deviceBinding = getDeviceBinding();
-  const deviceName = deviceBinding ? deviceBinding.name : 'Unknown';
-
-  const zip = new JSZip();
-  const obf = obfuscateShell(mod.script);
-  zip.file(`${mod.id}-run.sh`, obf);
-  zip.file(`${mod.id}-reset.sh`, getResetScript());
-  zip.file('command.txt', getCommandText(mod.name, deviceBinding));
-
-  const blob = await zip.generateAsync({ type: 'blob' });
-  saveAs(blob, `${mod.name}_${deviceName.replace(/\s/g, '_')}.zip`);
-  showToast(`✅ Download ${mod.emoji} ${mod.name} selesai! 🎉`);
-}
-
-async function downloadAllModules() {
-  const deviceBinding = getDeviceBinding();
-  const deviceName = deviceBinding ? deviceBinding.name : 'Unknown';
-  const zip = new JSZip();
-
-  MODULE_DATA.forEach(mod => {
-    const obf = obfuscateShell(mod.script);
-    zip.file(`${mod.id}-run.sh`, obf);
-    zip.file(`${mod.id}-reset.sh`, getResetScript());
-    zip.file(`${mod.id}/command.txt`, getCommandText(mod.name, deviceBinding));
-  });
-
-  const blob = await zip.generateAsync({ type: 'blob' });
-  saveAs(blob, `Headtrick_All_Modules_${deviceName.replace(/\s/g, '_')}.zip`);
-  showToast(`📦 Download semua module selesai! 🎉✨`);
-}
-
-// ============================================================
-// RENDER MODULE CARDS (dengan status binding)
-// ============================================================
-function renderModules() {
-  const deviceBinding = getDeviceBinding();
-  let html = '';
-  MODULE_DATA.forEach(mod => {
-    const isLocked = !deviceBinding;
-    const statusIcon = isLocked ? '🔒' : '🔓';
-    const statusText = isLocked ? 'Pilih device dulu!' : 'Ready';
-    const statusColor = isLocked ? 'locked' : 'unlocked';
-    html += `
-      <div class="module-card">
-        <i class="fas ${mod.icon}"></i>
-        <h3>${mod.emoji} ${mod.name}</h3>
-        <p>${mod.desc}</p>
-        <button class="download-btn" data-module="${mod.id}" ${isLocked ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
-          <i class="fas fa-download"></i> Download ${mod.name}
-        </button>
-        <div class="module-status">
-          <span class="${statusColor}">${statusIcon} ${statusText}</span>
-        </div>
-      </div>
-    `;
-  });
-  moduleGrid.innerHTML = html;
-
-  document.querySelectorAll('.download-btn:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      const mid = this.dataset.module;
-      downloadModule(mid);
-    });
-  });
-}
-
-// ============================================================
-// EVENTS
-// ============================================================
-deviceForm.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const name = deviceNameInput.value.trim();
-  if (!name) { showToast('⚠️ Masukkan nama device!', true); return; }
-  addDevice(name);
-  deviceNameInput.value = '';
-});
-
-downloadAllBtn.addEventListener('click', downloadAllModules);
-
-// ============================================================
-// INIT
-// ============================================================
-renderModules();
-renderDevices();
-updateSelectedDisplay();
-
-// Re-render module cards saat device berubah (agar status lock/unlock update)
-const origSelect = selectDevice;
-selectDevice = function(id) {
-  origSelect(id);
-  renderModules();
-};
-const origClear = clearDeviceBtn.click;
-clearDeviceBtn.addEventListener('click', function() {
-  // sudah di-handle di event listener sebelumnya
-});
-// Override delete juga
-const origDelete = deleteDevice;
-deleteDevice = function(id) {
-  origDelete(id);
-  renderModules();
-};
-
-showToast('🚀 Dashboard siap digunakan! Pilih device untuk unlock module. ✨');
-</script>
+    <!-- JavaScript Interactive Tabs & Drawer Handler -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('tab-generate').classList.add('hidden');
+            document.getElementById('tab-history').classList.add('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+
+            // Show selected tab
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+
+            // Update Page Title
+            const titles = {
+                'generate': 'Generate Key Panel',
+                'history': 'History & Database Management',
+                'profile': 'Profile Owner Information'
+            };
+            document.getElementById('page-title').innerText = titles[tabName];
+
+            // Update Desktop Sidebar active classes
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if(link.getAttribute('data-target') === tabName) {
+                    link.className = "nav-link flex items-center space-x-3 px-3 py-3 rounded-xl bg-accent/10 text-accent font-medium text-sm transition-all border border-accent/20";
+                } else {
+                    link.className = "nav-link flex items-center space-x-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white font-medium text-sm transition-all";
+                }
+            });
+
+            // Update Mobile Bottom Nav active classes
+            document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+                if(btn.getAttribute('data-target') === tabName) {
+                    btn.className = "bottom-nav-btn flex flex-col items-center justify-center flex-1 text-accent space-y-1";
+                } else {
+                    btn.className = "bottom-nav-btn flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-white space-y-1";
+                }
+            });
+
+            // Close mobile sidebar if open
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+            }
+        }
+
+        function toggleFreeze(button) {
+            const row = button.closest('tr');
+            const statusSpan = row.querySelector('td:nth-child(4) span');
+            if(button.classList.contains('frozen')) {
+                button.classList.remove('frozen', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                button.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+                button.innerHTML = '<i class="fa-solid fa-snowflake mr-1"></i> Freeze';
+                statusSpan.className = "px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20";
+                statusSpan.innerText = "Active";
+            } else {
+                button.classList.add('frozen', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                button.classList.remove('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+                button.innerHTML = '<i class="fa-solid fa-fire mr-1"></i> Unfreeze';
+                statusSpan.className = "px-2 py-1 bg-amber-500/10 text-amber-400 rounded-md border border-amber-500/20";
+                statusSpan.innerText = "Frozen";
+            }
+        }
+    </script>
 </body>
 </html>
